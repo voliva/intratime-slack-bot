@@ -45,13 +45,14 @@ async function actionsCommand(text, user, { postMessage, intratime }) {
       date = applyDateString(date, params[0]);
       date = applyTimeString(date, params[1]);
     }
+    const hasSetTime = params.length > 0;
 
     await postMessage({
       text: `Sure thing! It will take just a second...`,
     });
 
     try {
-      await intratime.submitClocking(user.token, action, format(date, 'yyyy-MM-dd HH:mm:ss'));
+      await intratime.submitClocking(user.token, action, date, hasSetTime);
 
       return {
         text: `Done! :)`

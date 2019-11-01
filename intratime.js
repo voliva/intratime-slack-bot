@@ -75,11 +75,16 @@ async function getStatus(token) {
     };
 }
 
-async function submitClocking(token, action, time) {
+const TIME_RANDOMNESS = 1000 * 60 * 10;
+async function submitClocking(token, action, dateTime, random) {
+    if(random) {
+        dateTime = new Date(dateTime.getTime() + Math.random() * TIME_RANDOMNESS - TIME_RANDOMNESS / 2);
+    }
+
     const resultObj = await post('https://newapi.intratime.es/api/user/clocking', {
         form: {
             user_action: `${action}`,
-            user_timestamp: time,
+            user_timestamp: format(dateTime, 'yyyy-MM-dd HH:mm:ss'),
             user_gps_coordinates: '41.4050371,2.1926044',
             user_use_server_time: 'false'
         },
@@ -106,7 +111,7 @@ async function fillAllDay(token, date) {
     const values = Object.values(defaultTimes);
     for(let [action, time] of values) {
         let dateTime = applyTimeString(date, time);
-        await submitClocking(token, action, format(dateTime, 'yyyy-MM-dd HH:mm:ss'));
+        await submitClocking(token, action, dateTime, true);
     }
 }
 
