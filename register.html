@@ -1,0 +1,17 @@
+<html>
+    <body>
+        <h1>Intratime bot registration</h1>
+        <form action="register" method="POST">
+            <input type="text" name="email" placeholder="Email" required />
+            <input type="password" name="pin" placeholder="Pin" required />
+            <input id="token" type="hidden" name="token" required />
+            <input type="submit" value="Complete registration" />
+        </form>
+
+        <script type="application/javascript">
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            document.getElementById('token').value = token;
+        </script>
+    </body>
+</html>

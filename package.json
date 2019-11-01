@@ -1,0 +1,18 @@
+{
+  "name": "intratime",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@slack/web-api": "^5.1.0",
+    "date-fns": "^2.0.1",
+    "koa": "^2.8.1",
+    "koa-bodyparser": "^4.2.1",
+    "koa-cors": "^0.0.16",
+    "koa-router": "^7.4.0",
+    "lowdb": "^1.0.0",
+    "node-cron": "^2.0.3",
+    "request": "^2.88.0",
+    "uuid": "^3.3.3"
+  }
+}
