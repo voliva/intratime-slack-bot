@@ -1,9 +1,10 @@
 const actions = require('./actions');
 const register = require('./register');
 const status = require('./status');
+const reminders = require('./reminders');
 
 const allModules = [
-  actions, register, status
+  actions, register, status, reminders
 ];
 
 function routes(router, db, slackWeb) {
