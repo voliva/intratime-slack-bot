@@ -89,7 +89,7 @@ async function processEvent(event) {
         });
     }
 
-    const msg = processMessage(insensitiveText, user, {
+    const msg = await processMessage(insensitiveText, user, {
         db,
         intratime,
         postMessage: msg => slackWeb.chat.postMessage({
