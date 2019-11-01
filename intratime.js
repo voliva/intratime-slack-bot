@@ -2,6 +2,19 @@
 const request = require('request');
 const util = require('util');
 const post = util.promisify(request.post);
+const get = util.promisify(request.get);
+const {
+    setHours,
+    setMinutes,
+    setSeconds,
+    addDays,
+    getDay,
+    setDate,
+    setMonth,
+    setYear,
+    format
+} = require('date-fns');
+const { applyTimeString } = require('./features/utils');
 
 const Action = {
     CheckIn: 0,
@@ -37,6 +50,31 @@ async function login(user, pin) {
     return resultObj.USER_TOKEN;
 }
 
+async function getStatus(token) {
+    const result = await get('https://newapi.intratime.es/api/user/clockings?last=true&type=0,1,2,3', {
+        headers: {
+            token
+        }
+    });
+    const resultObj = JSON.parse(result.body);
+
+    if(resultObj.status_code === 401) {
+        throw new Error(`Invalid credentials`);
+    }
+    if(!Array.isArray(resultObj)) {
+        throw new Error(`Unknown error when getting status.\n${resultObj}`);
+    }
+
+    if(!resultObj.length) {
+        return false;
+    }
+
+    return {
+        type: resultObj[0].INOUT_TYPE,
+        date: resultObj[0].INOUT_DATE
+    };
+}
+
 async function submitClocking(token, action, time) {
     const resultObj = await post('https://newapi.intratime.es/api/user/clocking', {
         form: {
@@ -64,15 +102,17 @@ async function submitClocking(token, action, time) {
     return true;
 }
 
-async function fillAllDay(token) {
+async function fillAllDay(token, date) {
     const values = Object.values(defaultTimes);
     for(let [action, time] of values) {
-        await submitClocking(token, action, time);
+        let dateTime = applyTimeString(date, time);
+        await submitClocking(token, action, format(dateTime, 'yyyy-MM-dd HH:mm:ss'));
     }
 }
 
 module.exports = {
     login,
+    getStatus,
     submitClocking,
     fillAllDay,
     Action
