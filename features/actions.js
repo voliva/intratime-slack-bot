@@ -101,8 +101,8 @@ module.exports = {
   commands: [actionsCommand, fillInDay],
   help: [
     ...(Object.keys(actionCommands).map(command =>
-      `${command}, ${command} HH:MM:SS or ${command} DD-MM-YYYY HH:MM:SS: Performs intratime action ${command}`
+      `\`${command}\`, \`${command} HH:MM:SS\` or \`${command} DD-MM-YYYY HH:MM:SS\`: Performs intratime action ${command}`
     )),
-    "fill all day: Performs all of the actions of the day with the default time values (check in 09:00, break 13:00, return 14:00 and check out 18:00). You can also set a date"
+    "`fill all day`: Performs all of the actions of the day with the default time values (check in 09:00, break 13:00, return 14:00 and check out 18:00). You can also set a date"
   ]
 };

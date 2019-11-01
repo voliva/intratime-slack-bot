@@ -78,7 +78,8 @@ async function getStatus(token) {
 const TIME_RANDOMNESS = 1000 * 60 * 10;
 async function submitClocking(token, action, dateTime, random) {
     if(random) {
-        dateTime = new Date(dateTime.getTime() + Math.random() * TIME_RANDOMNESS - TIME_RANDOMNESS / 2);
+	const extraTime = Math.trunc(Math.random() * TIME_RANDOMNESS - TIME_RANDOMNESS / 2);
+        dateTime = new Date(dateTime.getTime() + extraTime);
     }
 
     const resultObj = await post('https://newapi.intratime.es/api/user/clocking', {
@@ -108,9 +109,9 @@ async function submitClocking(token, action, dateTime, random) {
 }
 
 async function fillAllDay(token, date) {
-    const values = Object.values(defaultTimes);
+    const values = Object.entries(defaultTimes);
     for(let [action, time] of values) {
-        let dateTime = applyTimeString(date, time);
+        const dateTime = applyTimeString(date, time);
         await submitClocking(token, action, dateTime, true);
     }
 }

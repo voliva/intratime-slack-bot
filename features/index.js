@@ -14,7 +14,7 @@ async function processMessage(text, user, deps) {
   const { postMessage } = deps;
 
   if(text.startsWith('test')) {
-    text = text.substr('test').trim();
+    text = text.substr('test'.length).trim();
     deps.intratime = {
       ...deps.intratime,
       submitClocking: (...args) => postMessage({

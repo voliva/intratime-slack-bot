@@ -1,3 +1,11 @@
+const {
+  setHours,
+  setMinutes,
+  setSeconds,
+  setDate,
+  setMonth,
+  setYear
+} = require('date-fns');
 
 function applyTimeString(date, text) {
   const time = text.split(':');

@@ -94,5 +94,5 @@ module.exports = {
   prepareRegisterUrl,
   routes,
   commands: [registerCommand],
-  help: ['register: Initializes intratime\'s token']
+  help: ['`register`: Initializes intratime\'s token']
 };

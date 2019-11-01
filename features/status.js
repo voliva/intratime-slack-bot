@@ -30,6 +30,6 @@ async function statusCommand(text, user, { intratime }) {
 module.exports = {
   commands: [statusCommand],
   help: [
-    'status: Gets the last intratime submitted'
+    '`status`: Gets the last intratime submitted'
   ]
 };
