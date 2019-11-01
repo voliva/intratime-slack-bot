@@ -47,8 +47,9 @@ router
                 ctx.body = '';
                 processEvent(event);
                 break;
-            case 'interactive_message':
-                processIM(body);
+            case 'block_actions':
+		ctx.body = '';
+                processIM(body, db);
                 break;
             default:
                 console.log(body);
@@ -67,7 +68,7 @@ app.listen(8001);
 
 async function processEvent(event) {
     const { text, channel, bot_id, subtype } = event;
-    const insensitiveText = text.toLocaleLowerCase();
+    const insensitiveText = text && text.toLocaleLowerCase();
     const userId = channel;
 
     if (bot_id || subtype === 'message_changed') {

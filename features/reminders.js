@@ -1,6 +1,9 @@
 const uuid = require("uuid/v4");
 const { addDays, getDay } = require("date-fns");
 const cron = require("node-cron");
+const request = require('request');
+const util = require('util');
+const post = util.promisify(request.post);
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 
@@ -79,45 +82,38 @@ async function listRemindersCommand(text, user) {
   }
 }
 
-async function processIM(event) {
-  /* { type: 'interactive_message',
-  actions: [ { name: 'fill_name', type: 'button', value: 'fill_value' } ],
-  callback_id: 'command',
-  team: { id: 'TMRETC7EV', domain: 'intratime-oli-test' },
-  channel: { id: 'DMXFTAUPN', name: 'directmessage' },
-  user: { id: 'UN0228EKY', name: 'olivarra1' },
-  action_ts: '1567496853.329072',
-  message_ts: '1567434485.004800',
-  attachment_id: '1',
-  token: 'Rkl3KuWkbVsPNZGZidNYSgmj',
-  is_app_unfurl: false,
-  original_message: 
-   { type: 'message',
-     subtype: 'bot_message',
-     text: 'I didn\'t get that, select below or try again',
-     ts: '1567434485.004800',
-     username: 'Intratime',
-     bot_id: 'BMZRKEH0X',
-     attachments: [ [Object] ] },
-  response_url: 'https://hooks.slack.com/actions/TMRETC7EV/733838577570/C5PPhDtbrKErUDMsA8DbiU4b',
-  trigger_id: '746141619012.739503415505.f44b716f6f4e1ecb63e08ab5a2abbfc2' }
-  */
-  const { actions, original_message, message_ts, channel } = event;
+async function processIM(event, db) {
+  const { actions, response_url } = event;
   const action = actions[0];
 
-  if (action.name === "fill_in") {
-    await slackWeb.chat.update({
-      channel: channel.id,
-      text: original_message.text,
-      ts: message_ts,
-      attachments: [
-        {
-          text: "Fill in all day\nSure! Give me a few seconds.",
-          callback_id: "command",
-          attachment_type: "default",
-          actions: []
-        }
-      ]
+  const user = db
+    .get('users')
+    .find({ id: event.channel.id })
+    .value();
+
+  if(!user) {
+    return;
+  }
+
+  if (action.action_id === "delete-reminder") {
+    const reminder = action.selected_option.value;
+
+    let reminders = user.reminders || [];
+    reminders = reminders.filter(time => time !== reminder);
+
+    db.get("users")
+      .find(user)
+      .assign({
+        reminders
+      })
+      .write();
+
+    await post(response_url, {
+      body: {
+        replace_original: "true",
+        text: `Done - I won't remind you at ${reminder}`
+      },
+      json: true
     });
   }
 }
