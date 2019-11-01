@@ -21,7 +21,7 @@ db.defaults({
     tokens: []
 }).write();
 
-// setupReminders(db, slackWeb);
+setupReminders(db, slackWeb);
 
 router
     .get('/', async (ctx, next) => {

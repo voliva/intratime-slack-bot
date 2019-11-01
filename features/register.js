@@ -63,7 +63,8 @@ function routes(router, db, slackWeb) {
         users
           .push({
             id: userId,
-            token: userToken
+            token: userToken,
+            registered: Date.now()
           })
           .write();
       }

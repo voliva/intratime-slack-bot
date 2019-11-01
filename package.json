@@ -5,7 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "@slack/web-api": "^5.4.0",
-    "date-fns": "^2.0.1",
+    "date-fns": "2.6.0",
     "koa": "^2.8.1",
     "koa-bodyparser": "^4.2.1",
     "koa-cors": "^0.0.16",

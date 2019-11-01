@@ -1,9 +1,9 @@
-const uuid = require("uuid/v4");
-const { addDays, getDay } = require("date-fns");
+const { set, isToday, isWeekend } = require("date-fns");
 const cron = require("node-cron");
 const request = require('request');
 const util = require('util');
 const post = util.promisify(request.post);
+const { getStatus, Action } = require('../intratime');
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 
@@ -53,7 +53,7 @@ async function listRemindersCommand(text, user) {
         text: {
           type: 'mrkdwn',
           text: `Here's the list of the reminders you've set up:\n\n${
-            reminders.map(time => `* ${time}`).join(`\n`)
+            reminders.map(time => `- ${time}`).join(`\n`)
           }`
         }
       }, {
@@ -119,52 +119,112 @@ async function processIM(event, db) {
 }
 
 async function sendReminders(db, slackWeb) {
-  const now = new Date().getTime();
-  console.log(`sendReminders`, now);
+  const now = Date.now();
+  if(isWeekend(now)) {
+    return;
+  }
 
   const users = db
     .get("users")
-    .filter(user => !user.nextReminder || user.nextReminder <= now)
+    .filter(user => {
+      const todayReminders = user.reminders.map(time => {
+        const [hours, minutes] = time.split(':').map(s => Number(s));
+        return set(now, {
+          hours,
+          minutes,
+          seconds: 0
+        }).getTime();
+      });
+      const lastReminder = user.lastReminder || user.registered || 0;
+      return todayReminders.some(time => time > lastReminder && time <= now);
+    })
     .value();
 
-  console.log("users to send reminders: ", users.length);
   for (let user of users) {
     const channel = user.id;
 
-    await slackWeb.chat.postMessage({
-      text: `Hey! Do you want to fill all of today\'s intratimes?\nIMPORTANT: This will fill all 4 intratimes of the day with the default hours. Only do it if you haven't done any of the intratimes today, or you'll have duplicates.`,
-      channel,
-      attachments: [
-        {
-          text: "Fill in all day",
-          callback_id: "command",
-          attachment_type: "default",
-          actions: [
+    const status = await getStatus(user.token);
+    if(!status) {
+      console.error('sendReminders - Unkown status for user ', user.id);
+      continue;
+    }
+
+    const statusDate = new Date(status.date);
+    if(isToday(statusDate)) {
+      const nextAction =
+        status.type === Action.CheckIn ?
+          'Break' :
+        status.type === Action.Break ?
+          'Return' :
+        status.type === Action.Return ?
+          'CheckOut' : undefined;
+
+      if(!nextAction) {
+        await slackWeb.chat.postMessage({
+          text: `Hey! You asked me to remind you for intratime now, but it seems like you've already checked out for today, so I can't really help you.`,
+          channel
+        });
+      } else {
+        await slackWeb.chat.postMessage({
+          blocks: [{
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `Hey! You asked me to remind you about intratime - Based on your status, you can now ${nextAction}`,
+            }
+          }, {
+            type: 'actions',
+            elements: [
+              {
+                type: "button",
+                text: {
+                  type: 'plain_text',
+                  text: nextAction
+                },
+                value: nextAction
+              }
+            ]
+          }],
+          channel,
+        });
+      }
+    } else {
+      await slackWeb.chat.postMessage({
+        blocks: [{
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `Hey! You asked me to remind you about intratime - Do you want to fill all of today\'s intratimes or just check in?`,
+          }
+        }, {
+          type: 'actions',
+          elements: [
             {
-              name: "fill_in",
-              text: "Yes",
               type: "button",
-              value: uuid()
+              text: {
+                type: 'plain_text',
+                text: 'Fill all day'
+              },
+              value: 'FillAllDay'
+            },
+            {
+              type: "button",
+              text: {
+                type: 'plain_text',
+                text: 'Check In'
+              },
+              value: 'CheckIn'
             }
           ]
-        }
-      ]
-    });
-
-    let { nextReminder = now } = user;
-    nextReminder = new Date(nextReminder);
-    nextReminder = addDays(nextReminder, 1);
-
-    // Skip weekends
-    const weekDay = getDay(nextReminder);
-    if (weekDay == 6) {
-      nextReminder = addDays(nextReminder, 2);
+        }],
+        channel
+      });
     }
 
     db.get("users")
       .find(user)
       .assign({
-        nextReminder: nextReminder.getTime()
+        lastReminder: now
       })
       .write();
   }
