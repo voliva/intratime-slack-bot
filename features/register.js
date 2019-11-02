@@ -1,6 +1,12 @@
 const { login } = require("../intratime");
 const uuid = require("uuid/v4");
 
+const baseUrl = process.env.INTRATIME_URL;
+if(!baseUrl) {
+  console.error("This server needs a base url set in INTRATIME_URL env variable (e.g. https://example.com/intratime)");
+  process.exit(1);
+}
+
 function prepareRegisterUrl(userId, db) {
   const tokens = db.get("tokens");
 
@@ -16,7 +22,7 @@ function prepareRegisterUrl(userId, db) {
   }
   const { token } = tokenObj;
 
-  return `https://livewind.freemyip.com/intratime/register?token=${token}`;
+  return `${baseUrl}/register?token=${token}`;
 }
 
 const { createReadStream } = require("fs");

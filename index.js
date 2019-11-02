@@ -12,6 +12,10 @@ const { setupReminders, processIM } = require("./features/reminders");
 const intratime = require("./intratime");
 
 const oauthToken = process.env.SLACK_TOKEN;
+if(!oauthToken) {
+  console.error("This server needs a slack token set in SLACK_TOKEN env variable");
+  process.exit(1);
+}
 
 const slackWeb = new WebClient(oauthToken);
 const adapter = new FileSync("db.json");
