@@ -1,22 +1,27 @@
 const { set, isToday, isWeekend, format } = require("date-fns");
 const cron = require("node-cron");
-const request = require('request');
-const util = require('util');
+const request = require("request");
+const util = require("util");
 const post = util.promisify(request.post);
-const { getStatus, Action, submitClocking, fillAllDay } = require('../intratime');
+const {
+  getStatus,
+  Action,
+  submitClocking,
+  fillAllDay
+} = require("../intratime");
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 
 async function setupReminderCommand(text, user, { db }) {
-  const query = text.split(' ');
-  if(query[0] === 'remind' && timeRegex.test(query[1])) {
-    const time = query[1].split(':');
-    const timeString = time.slice(0, 2).join(':');
+  const query = text.split(" ");
+  if (query[0] === "remind" && timeRegex.test(query[1])) {
+    const time = query[1].split(":");
+    const timeString = time.slice(0, 2).join(":");
 
     const reminders = user.reminders || [];
-    if(reminders.includes(timeString)) {
+    if (reminders.includes(timeString)) {
       return {
-        text: `You already had a reminder set up for ${timeString}`,
+        text: `You already had a reminder set up for ${timeString}`
       };
     }
 
@@ -31,54 +36,57 @@ async function setupReminderCommand(text, user, { db }) {
       .write();
 
     return {
-      text: `Sure! I'll remind you about intratime every day at ${timeString}`,
+      text: `Sure! I'll remind you about intratime every day at ${timeString}`
     };
   }
 }
 
 async function listRemindersCommand(text, user) {
-  const query = text.split(' ');
+  const query = text.split(" ");
 
-  if(query[0] === 'remind' && query[1] === 'list') {
+  if (query[0] === "remind" && query[1] === "list") {
     const reminders = user.reminders || [];
-    if(!reminders.length) {
+    if (!reminders.length) {
       return {
-        text: `You don't have any reminder set up`,
+        text: `You don't have any reminder set up`
       };
     }
 
     return {
-      blocks: [{
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `Here's the list of the reminders you've set up:\n\n${
-            reminders.map(time => `- ${time}`).join(`\n`)
-          }`
-        }
-      }, {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `Select a reminder to delete from the list`
+      blocks: [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `Here's the list of the reminders you've set up:\n\n${reminders
+              .map(time => `- ${time}`)
+              .join(`\n`)}`
+          }
         },
-        accessory: {
-          type: 'static_select',
-          action_id: 'delete-reminder',
-          placeholder: {
-            type: 'plain_text',
-            text: 'Delete a reminder'
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `Select a reminder to delete from the list`
           },
-          options: reminders.map(time => ({
-            text: {
-              type: 'plain_text',
-              text: time
+          accessory: {
+            type: "static_select",
+            action_id: "delete-reminder",
+            placeholder: {
+              type: "plain_text",
+              text: "Delete a reminder"
             },
-            value: time
-          }))
+            options: reminders.map(time => ({
+              text: {
+                type: "plain_text",
+                text: time
+              },
+              value: time
+            }))
+          }
         }
-      }]
-    }
+      ]
+    };
   }
 }
 
@@ -86,21 +94,24 @@ async function processIM(event, db) {
   const { actions, response_url } = event;
   const action = actions[0];
 
-  const updateMessage = text => post(response_url, {
-    body: {
-      replace_original: "true",
-      text
-    },
-    json: true
-  });
+  const updateMessage = text =>
+    post(response_url, {
+      body: {
+        replace_original: "true",
+        text
+      },
+      json: true
+    });
 
   const user = db
-    .get('users')
+    .get("users")
     .find({ id: event.channel.id })
     .value();
 
-  if(!user) {
-    return updateMessage(`I'm sorry but something wrong has happened - I don't know who you are. Try again later.`);
+  if (!user) {
+    return updateMessage(
+      `I'm sorry but something wrong has happened - I don't know who you are. Try again later.`
+    );
   }
 
   if (action.action_id === "delete-reminder") {
@@ -122,8 +133,10 @@ async function processIM(event, db) {
     const value = action.value.split("/");
     const date = new Date(`${value[3]}-${value[2]}-${value[1]}`);
 
-    if(!isToday(date)) {
-      return updateMessage(`Sorry, but that action has expired - Use regular commands instead`);
+    if (!isToday(date)) {
+      return updateMessage(
+        `Sorry, but that action has expired - Use regular commands instead`
+      );
     }
 
     const actionMsg = updateMessage(`Sure - Give me just a second`);
@@ -141,14 +154,18 @@ async function processIM(event, db) {
     await fillAllDay(user.token, date);
 
     await actionMsg;
-    return updateMessage(`Done! I've filled all the intratimes of ${isToday(date) ? 'today' : dateStr} for you`);
+    return updateMessage(
+      `Done! I've filled all the intratimes of ${
+        isToday(date) ? "today" : dateStr
+      } for you`
+    );
   }
 }
 
 async function sendReminders(db, slackWeb) {
   const now = Date.now();
-  const today = format(now, 'dd/MM/yyyy')
-  if(isWeekend(now)) {
+  const today = format(now, "dd/MM/yyyy");
+  if (isWeekend(now)) {
     return;
   }
 
@@ -156,7 +173,7 @@ async function sendReminders(db, slackWeb) {
     .get("users")
     .filter(user => {
       const todayReminders = user.reminders.map(time => {
-        const [hours, minutes] = time.split(':').map(s => Number(s));
+        const [hours, minutes] = time.split(":").map(s => Number(s));
         return set(now, {
           hours,
           minutes,
@@ -172,82 +189,89 @@ async function sendReminders(db, slackWeb) {
     const channel = user.id;
 
     const status = await getStatus(user.token);
-    if(!status) {
-      console.error('sendReminders - Unkown status for user ', user.id);
+    if (!status) {
+      console.error("sendReminders - Unkown status for user ", user.id);
       continue;
     }
 
     const statusDate = new Date(status.date);
-    if(isToday(statusDate)) {
+    if (isToday(statusDate)) {
       const nextAction =
-        status.type === Action.CheckIn ?
-          'Break' :
-        status.type === Action.Break ?
-          'Return' :
-        status.type === Action.Return ?
-          'CheckOut' : undefined;
+        status.type === Action.CheckIn
+          ? "Break"
+          : status.type === Action.Break
+          ? "Return"
+          : status.type === Action.Return
+          ? "CheckOut"
+          : undefined;
 
-      if(!nextAction) {
+      if (!nextAction) {
         await slackWeb.chat.postMessage({
           text: `Hey! You asked me to remind you for intratime now, but it seems like you've already checked out for today, so I can't really help you.`,
           channel
         });
       } else {
         await slackWeb.chat.postMessage({
-          blocks: [{
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `Hey! You asked me to remind you about intratime - Based on your status, you can now ${nextAction}`,
-            }
-          }, {
-            type: 'actions',
-            elements: [
-              {
-                type: "button",
-                text: {
-                  type: 'plain_text',
-                  text: nextAction + ' (Now)'
-                },
-                value: nextAction + '/' + today,
-                action_id: 'reminder-action'
+          blocks: [
+            {
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text: `Hey! You asked me to remind you about intratime - Based on your status, you can now ${nextAction}`
               }
-            ]
-          }],
-          channel,
+            },
+            {
+              type: "actions",
+              elements: [
+                {
+                  type: "button",
+                  text: {
+                    type: "plain_text",
+                    text: nextAction + " (Now)"
+                  },
+                  value: nextAction + "/" + today,
+                  action_id: "reminder-action"
+                }
+              ]
+            }
+          ],
+          channel
         });
       }
     } else {
       await slackWeb.chat.postMessage({
-        blocks: [{
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: `Hey! You asked me to remind you about intratime - Do you want to fill all of today\'s intratimes or just check in?`,
-          }
-        }, {
-          type: 'actions',
-          elements: [
-            {
-              type: "button",
-              text: {
-                type: 'plain_text',
-                text: 'Fill all day'
-              },
-              value: 'FillAllDay/' + today,
-              action_id: 'reminder-fill'
-            },
-            {
-              type: "button",
-              text: {
-                type: 'plain_text',
-                text: 'Check In'
-              },
-              value: 'CheckIn/' + today,
-              action_id: 'reminder-action'
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `Hey! You asked me to remind you about intratime - Do you want to fill all of today\'s intratimes or just check in?`
             }
-          ]
-        }],
+          },
+          {
+            type: "actions",
+            elements: [
+              {
+                type: "button",
+                text: {
+                  type: "plain_text",
+                  text: "Fill all day"
+                },
+                value: "FillAllDay/" + today,
+                action_id: "reminder-fill"
+              },
+              {
+                type: "button",
+                text: {
+                  type: "plain_text",
+                  text: "Check In"
+                },
+                value: "CheckIn/" + today,
+                action_id: "reminder-action"
+              }
+            ]
+          }
+        ],
         channel
       });
     }
@@ -264,14 +288,14 @@ async function sendReminders(db, slackWeb) {
 const setupReminders = (db, slackWeb) => {
   sendReminders(db, slackWeb);
   cron.schedule("* * * * *", () => sendReminders(db, slackWeb));
-}
+};
 
 module.exports = {
   setupReminders,
   commands: [setupReminderCommand, listRemindersCommand],
   processIM,
   help: [
-    '`remind HH:MM`: Set up a daily reminder for intratime',
-    '`remind list`: List the reminders set up to delete them'
+    "`remind HH:MM`: Set up a daily reminder for intratime",
+    "`remind list`: List the reminders set up to delete them"
   ]
 };

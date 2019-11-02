@@ -1,18 +1,19 @@
-const { Action } = require('../intratime');
+const { Action } = require("../intratime");
 
 async function statusCommand(text, user, { intratime }) {
-  if(text.startsWith("status")) {
+  if (text.startsWith("status")) {
     try {
       const status = await intratime.getStatus(user.token);
 
-      if(!status) {
+      if (!status) {
         return {
           text: `I couldn't fetch your status :(`
         };
       }
 
-      const action = Object.entries(Action)
-        .find(([, value]) => value === status.type)[0];
+      const action = Object.entries(Action).find(
+        ([, value]) => value === status.type
+      )[0];
 
       return {
         text: `Your last action was a "${action}" on ${status.date}`
@@ -29,7 +30,5 @@ async function statusCommand(text, user, { intratime }) {
 
 module.exports = {
   commands: [statusCommand],
-  help: [
-    '`status`: Gets the last intratime submitted'
-  ]
+  help: ["`status`: Gets the last intratime submitted"]
 };

@@ -79,7 +79,7 @@ function routes(router, db, slackWeb) {
     });
 }
 
-async function registerCommand(text, user, {db}) {
+async function registerCommand(text, user, { db }) {
   if (text.startsWith("register")) {
     const url = prepareRegisterUrl(userId, db);
 
@@ -95,5 +95,5 @@ module.exports = {
   prepareRegisterUrl,
   routes,
   commands: [registerCommand],
-  help: ['`register`: Initializes intratime\'s token']
+  help: ["`register`: Initializes intratime's token"]
 };
