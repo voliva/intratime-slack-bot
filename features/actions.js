@@ -95,8 +95,9 @@ async function fillInDay(text, user, { postMessage, intratime }) {
         text: `Great! Made all intratimes of the day!`
       };
     } catch (ex) {
+      console.log(ex);
       return {
-        text: `Something went wrong :/`
+        text: `Something went wrong :/ - ${ex.message}`
       };
     }
   }

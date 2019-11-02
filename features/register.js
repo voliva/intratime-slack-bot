@@ -14,7 +14,6 @@ function prepareRegisterUrl(userId, db) {
   if (!tokenObj) {
     tokenObj = {
       userId,
-      channel,
       token: uuid(),
       timestamp: new Date().getTime()
     };
@@ -87,7 +86,7 @@ function routes(router, db, slackWeb) {
 
 async function registerCommand(text, user, { db }) {
   if (text.startsWith("register")) {
-    const url = prepareRegisterUrl(userId, db);
+    const url = prepareRegisterUrl(user.id, db);
 
     return {
       text: `Sure thing! Use this link to register your credentials: ${url}`
