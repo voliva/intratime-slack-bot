@@ -279,7 +279,7 @@ async function sendReminders(db, slackWeb) {
     db.get("users")
       .find(user)
       .assign({
-        lastReminder: now
+        lastReminder: Date.now()
       })
       .write();
   }

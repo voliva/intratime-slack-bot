@@ -2,6 +2,7 @@ const actions = require("./actions");
 const register = require("./register");
 const status = require("./status");
 const reminders = require("./reminders");
+const logQuery = require("./logQuery");
 
 const allModules = [actions, register, status, reminders];
 
@@ -37,10 +38,13 @@ async function processMessage(text, user, deps) {
     for (command of m.commands) {
       const result = await command(text, user, deps);
       if (result) {
+        logQuery(text, true);
         return result;
       }
     }
   }
+
+  logQuery(text, false);
 
   const commandHelp = allModules.reduce(
     (res, m) => (m.help ? [...res, ...m.help] : m),
