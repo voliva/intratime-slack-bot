@@ -172,7 +172,7 @@ async function sendReminders(db, slackWeb) {
   const users = db
     .get("users")
     .filter(user => {
-      const todayReminders = user.reminders.map(time => {
+      const todayReminders = (user.reminders || []).map(time => {
         const [hours, minutes] = time.split(":").map(s => Number(s));
         return set(now, {
           hours,
