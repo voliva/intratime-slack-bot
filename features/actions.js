@@ -24,7 +24,7 @@ async function actionsCommand(text, user, { postMessage, intratime }) {
       .split(" ");
 
     let date = new Date();
-    if (params.length === 1) {
+    if (params.length === 1 && params[0]) {
       // It must be a time string
       if (!timeRegex.test(params[0])) {
         return {
@@ -75,7 +75,7 @@ async function fillInDay(text, user, { postMessage, intratime }) {
       .split(" ");
 
     let date = new Date();
-    if (params.length) {
+    if (params.length && params[0]) {
       if (!dateRegex.test(params[0])) {
         return {
           text: `I didn't understand that... if you want to specify a day, you should use the format DD-MM-YYYY`
