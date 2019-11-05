@@ -69,7 +69,7 @@ async function getStatus(token) {
   };
 }
 
-const TIME_RANDOMNESS = 1000 * 60 * 10;
+const TIME_RANDOMNESS = 1000 * 60 * 5;
 async function submitClocking(token, action, dateTime, random) {
   if (random) {
     const extraTime = Math.trunc(
