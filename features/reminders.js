@@ -1,4 +1,5 @@
 const { set, isToday, isWeekend, format } = require("date-fns");
+const { zonedTimeToUtc } = require('date-fns-tz')
 const cron = require("node-cron");
 const request = require("request");
 const util = require("util");
@@ -174,11 +175,11 @@ async function sendReminders(db, slackWeb) {
     .filter(user => {
       const todayReminders = (user.reminders || []).map(time => {
         const [hours, minutes] = time.split(":").map(s => Number(s));
-        return set(now, {
+        return zonedTimeToUtc(set(now, {
           hours,
           minutes,
           seconds: 0
-        }).getTime();
+        }), 'Europe/Madrid').getTime();
       });
       const lastReminder = user.lastReminder || user.registered || 0;
       return todayReminders.some(time => time > lastReminder && time <= now);
