@@ -10,6 +10,7 @@ const { routes, processMessage } = require("./features");
 const { prepareRegisterUrl } = require("./features/register");
 const { setupReminders, processIM } = require("./features/reminders");
 const intratime = require("./intratime");
+const queue = require("./queue");
 
 const oauthToken = process.env.SLACK_TOKEN;
 if(!oauthToken) {
@@ -92,7 +93,10 @@ async function processEvent(event) {
 
   const msg = await processMessage(insensitiveText, user, {
     db,
-    intratime,
+    intratime: {
+      ...intratime,
+      ...queue
+    },
     postMessage: msg =>
       slackWeb.chat.postMessage({
         ...msg,

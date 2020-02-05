@@ -53,10 +53,10 @@ async function actionsCommand(text, user, { postMessage, intratime }) {
     });
 
     try {
-      await intratime.submitClocking(user.token, action, date);
+      const queuePos = await intratime.submitClocking(user.id, user.token, action, date);
 
       return {
-        text: `Done! :)`
+        text: queuePos === 0 ? `Done! :)` : `There's a bit of overload in the server - I'll submit it for you in a while, please don't repeat this request (position in queue: ${queuePos})`
       };
     } catch (ex) {
       return {
@@ -88,10 +88,10 @@ async function fillInDay(text, user, { postMessage, intratime }) {
     });
 
     try {
-      await intratime.fillAllDay(user.token, date);
+      const queuePos = await intratime.fillAllDay(user.token, date);
 
       return {
-        text: `Great! Made all intratimes of the day!`
+        text: queuePos === 0 ? `Great! Made all intratimes of the day!` : `There's a bit of overload in the server - I'll submit it for you in a while, please don't repeat this request (position in queue: ${queuePos})`
       };
     } catch (ex) {
       console.log(ex);

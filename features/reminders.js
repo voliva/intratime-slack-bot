@@ -141,10 +141,10 @@ async function processIM(event, db) {
     }
 
     const actionMsg = updateMessage(`Sure - Give me just a second`);
-    await submitClocking(user.token, Action[value[0]], new Date(), false);
+    const queuePos = await submitClocking(user.token, Action[value[0]], new Date(), false);
 
     await actionMsg;
-    return updateMessage(`Done! I've performed the action ${value[0]} for you`);
+    return updateMessage(queuePos === 0 ? `Done! I've performed the action ${value[0]} for you` : `There's a bit of overload in the server - I'll submit it for you in a while, please don't repeat this request (position in queue: ${queuePos})`);
   }
   if (action.action_id === "reminder-fill") {
     const value = action.value.split("/");
@@ -152,13 +152,13 @@ async function processIM(event, db) {
     const date = new Date(dateStr);
 
     const actionMsg = updateMessage(`Sure - Give me just a few seconds`);
-    await fillAllDay(user.token, date);
+    const queuePos = await fillAllDay(user.token, date);
 
     await actionMsg;
     return updateMessage(
-      `Done! I've filled all the intratimes of ${
+      queuePos === 0 ? `Done! I've filled all the intratimes of ${
         isToday(date) ? "today" : dateStr
-      } for you`
+      } for you` : `There's a bit of overload in the server - I'll submit it for you in a while, please don't repeat this request (position in queue: ${queuePos})`
     );
   }
 }

@@ -5,20 +5,12 @@ const get = util.promisify(request.get);
 const {
   format
 } = require("date-fns");
-const { applyTimeString } = require("./features/utils");
 
 const Action = {
   CheckIn: 0,
   Return: 3, // => Break
   CheckOut: 1, // => Return
   Break: 2 // => CheckOut
-};
-
-const defaultTimes = {
-  [Action.CheckIn]: "09:00:00",
-  [Action.Break]: "13:00:00",
-  [Action.Return]: "14:00:00",
-  [Action.CheckOut]: "18:00:00"
 };
 
 async function login(user, pin) {
@@ -93,6 +85,9 @@ async function submitClocking(token, action, dateTime, random) {
     }
   );
 
+  if (resultObj.statusCode === 429) {
+    throw new Error('Rate limit exceeded');
+  }
   if (resultObj.statusCode > 400) {
     let serverMessage = "";
     try {
@@ -109,14 +104,6 @@ async function submitClocking(token, action, dateTime, random) {
     );
   }
   return true;
-}
-
-async function fillAllDay(token, date) {
-  const values = Object.entries(defaultTimes);
-  for (let [action, time] of values) {
-    const dateTime = applyTimeString(date, time);
-    await submitClocking(token, action, dateTime, true);
-  }
 }
 
 module.exports = {
