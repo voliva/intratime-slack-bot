@@ -20,6 +20,12 @@ const defaultTimes = {
   [Action.Return]: "14:00:00",
   [Action.CheckOut]: "18:00:00"
 };
+const actionOrder = [
+  Action.CheckIn,
+  Action.Break,
+  Action.Return,
+  Action.CheckOut,
+]
 
 async function login(user, pin) {
   const result = await post("https://newapi.intratime.es/api/user/login", {
@@ -78,6 +84,12 @@ async function submitClocking(token, action, dateTime, random) {
     dateTime = new Date(dateTime.getTime() + extraTime);
   }
 
+  console.log('submitting', "https://newapi.intratime.es/api/user/clocking", {
+    user_action: `${action}`,
+    user_timestamp: format(dateTime, "yyyy-MM-dd HH:mm:ss"),
+    user_gps_coordinates: "41.4050371,2.1926044",
+    user_use_server_time: "false"
+  });
   const resultObj = await post(
     "https://newapi.intratime.es/api/user/clocking",
     {
@@ -112,8 +124,8 @@ async function submitClocking(token, action, dateTime, random) {
 }
 
 async function fillAllDay(token, date) {
-  const values = Object.entries(defaultTimes);
-  for (let [action, time] of values) {
+  for (let action of actionOrder) {
+    const time = defaultTimes[action];
     const dateTime = applyTimeString(date, time);
     await submitClocking(token, action, dateTime, true);
   }
