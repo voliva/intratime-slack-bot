@@ -1,4 +1,4 @@
-const { set, isToday, isWeekend, format } = require("date-fns");
+const { set, isToday, isWeekend, format, getMonth, getDay } = require("date-fns");
 const { zonedTimeToUtc } = require('date-fns-tz')
 const cron = require("node-cron");
 const request = require("request");
@@ -8,7 +8,8 @@ const {
   getStatus,
   Action,
   submitClocking,
-  fillAllDay
+  fillAllDay,
+  fillHalfDay
 } = require("../intratime");
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
@@ -157,14 +158,30 @@ async function processIM(event, db) {
     await actionMsg;
     return updateMessage(
       `Done! I've filled all the intratimes of ${
-        isToday(date) ? "today" : dateStr
+      isToday(date) ? "today" : dateStr
       } for you`
+    );
+  }
+  if (action.action_id === "reminder-fill-half") {
+    const value = action.value.split("/");
+    const dateStr = `${value[3]}-${value[2]}-${value[1]}`;
+    const date = new Date(dateStr);
+
+    const actionMsg = updateMessage(`Sure - Give me just a few seconds`);
+    await fillHalfDay(user.token, date);
+
+    await actionMsg;
+    return updateMessage(
+      `Done! I've filled the intratimes of ${
+      isToday(date) ? "today" : dateStr
+      } (half day) for you`
     );
   }
 }
 
 async function sendReminders(db, slackWeb) {
   const now = Date.now();
+  const isHalfDay = getDay(now) === 5 && getMonth(now) === 7; // Fridays of August
   const today = format(now, "dd/MM/yyyy");
   if (isWeekend(now)) {
     return;
@@ -201,10 +218,10 @@ async function sendReminders(db, slackWeb) {
         status.type === Action.CheckIn
           ? "Break"
           : status.type === Action.Break
-          ? "Return"
-          : status.type === Action.Return
-          ? "CheckOut"
-          : undefined;
+            ? "Return"
+            : status.type === Action.Return
+              ? "CheckOut"
+              : undefined;
 
       if (!nextAction) {
         await slackWeb.chat.postMessage({
@@ -240,27 +257,39 @@ async function sendReminders(db, slackWeb) {
         });
       }
     } else {
+      const fillDayBtn = isHalfDay ? {
+        type: "button",
+        text: {
+          type: "plain_text",
+          text: "Fill half day"
+        },
+        value: "FillHalfDay/" + today,
+        action_id: "reminder-fill-half"
+      } : {
+          type: "button",
+          text: {
+            type: "plain_text",
+            text: "Fill all day"
+          },
+          value: "FillAllDay/" + today,
+          action_id: "reminder-fill"
+        };
+
+      const halfDayGreeting = isHalfDay ? `It's an August Friday! :D ` : '';
+
       await slackWeb.chat.postMessage({
         blocks: [
           {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `Hey! You asked me to remind you about intratime - Do you want to fill all of today\'s intratimes or just check in?`
+              text: `Hey! ${halfDayGreeting}You asked me to remind you about intratime - Do you want to fill all of today\'s intratimes or just check in?`
             }
           },
           {
             type: "actions",
             elements: [
-              {
-                type: "button",
-                text: {
-                  type: "plain_text",
-                  text: "Fill all day"
-                },
-                value: "FillAllDay/" + today,
-                action_id: "reminder-fill"
-              },
+              fillDayBtn,
               {
                 type: "button",
                 text: {

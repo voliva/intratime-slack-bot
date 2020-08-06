@@ -84,12 +84,6 @@ async function submitClocking(token, action, dateTime, random) {
     dateTime = new Date(dateTime.getTime() + extraTime);
   }
 
-  console.log('submitting', "https://newapi.intratime.es/api/user/clocking", {
-    user_action: `${action}`,
-    user_timestamp: format(dateTime, "yyyy-MM-dd HH:mm:ss"),
-    user_gps_coordinates: "41.4050371,2.1926044",
-    user_use_server_time: "false"
-  });
   const resultObj = await post(
     "https://newapi.intratime.es/api/user/clocking",
     {
@@ -109,7 +103,7 @@ async function submitClocking(token, action, dateTime, random) {
     let serverMessage = "";
     try {
       serverMessage = JSON.parse(resultObj.body).message;
-    } catch (ex) {}
+    } catch (ex) { }
 
     throw new Error(
       `Service returned error: ${resultObj.statusCode} ${resultObj.statusMessage}. ${serverMessage}`
@@ -131,10 +125,16 @@ async function fillAllDay(token, date) {
   }
 }
 
+async function fillHalfDay(token, date) {
+  await submitClocking(token, Action.CheckIn, applyTimeString(date, '10:00:00'), true);
+  await submitClocking(token, Action.CheckOut, applyTimeString(date, '14:00:00'), true);
+}
+
 module.exports = {
   login,
   getStatus,
   submitClocking,
   fillAllDay,
+  fillHalfDay,
   Action
 };
