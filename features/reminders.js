@@ -136,8 +136,9 @@ async function processIM(event, db) {
     const date = new Date(`${value[3]}-${value[2]}-${value[1]}`);
 
     if (!isToday(date)) {
+      const suggestion = `{check in/check out/break/return} ${value[1]}-${value[2]}-${value[3]} {time}`;
       return updateMessage(
-        `Sorry, but that action has expired - Use regular commands instead`
+        `Sorry, but that action has expired, as it's from a past date - Use "${suggestion}" if you still want to ${value[0]}`
       );
     }
 
@@ -151,6 +152,13 @@ async function processIM(event, db) {
     const value = action.value.split("/");
     const dateStr = `${value[3]}-${value[2]}-${value[1]}`;
     const date = new Date(dateStr);
+
+    if (!isToday(date)) {
+      const suggestion = `fill all day ${value[1]}-${value[2]}-${value[3]}`;
+      return updateMessage(
+        `Sorry, but that action has expired, as it's from a past date - Use "${suggestion}" if you still want to fill this day`
+      );
+    }
 
     const actionMsg = updateMessage(`Sure - Give me just a few seconds`);
     await fillAllDay(user.token, date);
@@ -166,6 +174,13 @@ async function processIM(event, db) {
     const value = action.value.split("/");
     const dateStr = `${value[3]}-${value[2]}-${value[1]}`;
     const date = new Date(dateStr);
+
+    if (!isToday(date)) {
+      const suggestion = `fill half day ${value[1]}-${value[2]}-${value[3]}`;
+      return updateMessage(
+        `Sorry, but that action has expired, as it's from a past date - Use "${suggestion}" if you still want to fill this day`
+      );
+    }
 
     const actionMsg = updateMessage(`Sure - Give me just a few seconds`);
     await fillHalfDay(user.token, date);
