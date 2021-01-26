@@ -221,7 +221,12 @@ async function sendReminders(db, slackWeb) {
   for (let user of users) {
     const channel = user.id;
 
-    const status = await getStatus(user.token);
+    let status;
+    try {
+      status = await getStatus(user.token);
+    } catch (ex) {
+      console.error("sendReminders - getStatus failed for user ", user.id, ex);
+    }
     if (!status) {
       console.error("sendReminders - Unkown status for user ", user.id);
       continue;
