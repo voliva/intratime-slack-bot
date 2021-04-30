@@ -2,65 +2,59 @@ const request = require("request");
 const util = require("util");
 const post = util.promisify(request.post);
 const get = util.promisify(request.get);
-const {
-  format
-} = require("date-fns");
 const { applyTimeString } = require("./features/utils");
 
 const Action = {
   CheckIn: 0,
   Return: 3, // => Break
   CheckOut: 1, // => Return
-  Break: 2 // => CheckOut
+  Break: 2, // => CheckOut
 };
 
 const defaultTimes = {
   [Action.CheckIn]: "09:00:00",
   [Action.Break]: "13:00:00",
   [Action.Return]: "14:00:00",
-  [Action.CheckOut]: "18:00:00"
+  [Action.CheckOut]: "18:00:00",
 };
 const actionOrder = [
   Action.CheckIn,
   Action.Break,
   Action.Return,
   Action.CheckOut,
-]
+];
 
-async function login(user, pin) {
-  const result = await post("https://newapi.intratime.es/api/user/login", {
-    form: {
-      user,
-      pin
-    }
-  });
+const baseUrl = "https://weareadaptive.woffu.com";
+const headers = (apiKey) => ({
+  "Content-Type": "application/json",
+  Accept: "application/json",
+  Authorization: `Basic ${apiKey}`,
+});
 
-  const resultObj = JSON.parse(result.body);
-
-  if (resultObj.status_code === 401) {
-    throw new Error(`Invalid credentials`);
-  }
-  if (!resultObj.USER_TOKEN) {
-    throw new Error(`Unknown error when logging in.\n${resultObj}`);
-  }
-
-  return resultObj.USER_TOKEN;
+async function login(apiKey) {
+  // I think I need to know the user id beforehand for every subsequent request. How to do it from API key?
+  // Otherwise I'll need the user's.
+  // Or maybe I can have only one API key and manage other users with just their ID? O.O
+  return btoa(apiKey + ":") + ";" + "TODO user id";
 }
 
 async function getStatus(token) {
-  const result = await get(
-    "https://newapi.intratime.es/api/user/clockings?last=true&type=0,1,2,3",
-    {
-      headers: {
-        token
-      }
-    }
-  );
-  const resultObj = JSON.parse(result.body);
+  const [apiKey, userId] = token.split(";");
 
-  if (resultObj.status_code === 401) {
+  const result = await get(`${baseUrl}/api/v1/users/${userId}/signs`, {
+    headers: headers(apiKey),
+  });
+
+  if (result.statusCode >= 500) {
+    console.log(result.body);
+    throw new Error(`Internal server error`);
+  }
+  if (result.statusCode >= 400) {
+    console.log(result.body);
     throw new Error(`Invalid credentials`);
   }
+
+  const resultObj = JSON.parse(result.body);
   if (!Array.isArray(resultObj)) {
     throw new Error(`Unknown error when getting status.\n${resultObj}`);
   }
@@ -70,13 +64,15 @@ async function getStatus(token) {
   }
 
   return {
-    type: resultObj[0].INOUT_TYPE,
-    date: resultObj[0].INOUT_DATE
+    type: resultObj[0].SignIn ? Action.CheckIn : Action.CheckOut,
+    date: resultObj[0].Date,
   };
 }
 
 const TIME_RANDOMNESS = 1000 * 60 * 5;
 async function submitClocking(token, action, dateTime, random) {
+  const [apiKey, userId] = token.split(";");
+
   if (random) {
     const extraTime = Math.trunc(
       Math.random() * TIME_RANDOMNESS - TIME_RANDOMNESS / 2
@@ -84,32 +80,28 @@ async function submitClocking(token, action, dateTime, random) {
     dateTime = new Date(dateTime.getTime() + extraTime);
   }
 
-  const resultObj = await post(
-    "https://newapi.intratime.es/api/user/clocking",
-    {
-      form: {
-        user_action: `${action}`,
-        user_timestamp: format(dateTime, "yyyy-MM-dd HH:mm:ss"),
-        user_gps_coordinates: "41.4050371,2.1926044",
-        user_use_server_time: "false"
+  const resultObj = await post(`${baseUrl}/api/v1/signs`, {
+    json: {
+      sign: {
+        UserId: userId,
+        Date: dateTime.toISOString(),
+        SignIn: action === Action.CheckIn || action === Action.Return,
       },
-      headers: {
-        token
-      }
-    }
-  );
+    },
+    headers: headers(apiKey),
+  });
 
   if (resultObj.statusCode > 400) {
     let serverMessage = "";
     try {
       serverMessage = JSON.parse(resultObj.body).message;
-    } catch (ex) { }
+    } catch (ex) {}
 
     throw new Error(
       `Service returned error: ${resultObj.statusCode} ${resultObj.statusMessage}. ${serverMessage}`
     );
   }
-  if (resultObj.statusCode !== 201) {
+  if (resultObj.statusCode !== 200) {
     throw new Error(
       `Service returned unexpected status: ${resultObj.statusCode} ${resultObj.body}`
     );
@@ -126,8 +118,18 @@ async function fillAllDay(token, date) {
 }
 
 async function fillHalfDay(token, date) {
-  await submitClocking(token, Action.CheckIn, applyTimeString(date, '10:00:00'), true);
-  await submitClocking(token, Action.CheckOut, applyTimeString(date, '14:00:00'), true);
+  await submitClocking(
+    token,
+    Action.CheckIn,
+    applyTimeString(date, "10:00:00"),
+    true
+  );
+  await submitClocking(
+    token,
+    Action.CheckOut,
+    applyTimeString(date, "14:00:00"),
+    true
+  );
 }
 
 module.exports = {
@@ -136,5 +138,5 @@ module.exports = {
   submitClocking,
   fillAllDay,
   fillHalfDay,
-  Action
+  Action,
 };
