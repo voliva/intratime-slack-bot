@@ -1,5 +1,12 @@
-const { set, isToday, isWeekend, format, getMonth, getDay } = require("date-fns");
-const { zonedTimeToUtc } = require('date-fns-tz')
+const {
+  set,
+  isToday,
+  isWeekend,
+  format,
+  getMonth,
+  getDay,
+} = require("date-fns");
+const { zonedTimeToUtc } = require("date-fns-tz");
 const cron = require("node-cron");
 const request = require("request");
 const util = require("util");
@@ -9,7 +16,7 @@ const {
   Action,
   submitClocking,
   fillAllDay,
-  fillHalfDay
+  fillHalfDay,
 } = require("../intratime");
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
@@ -23,7 +30,7 @@ async function setupReminderCommand(text, user, { db }) {
     const reminders = user.reminders || [];
     if (reminders.includes(timeString)) {
       return {
-        text: `You already had a reminder set up for ${timeString}`
+        text: `You already had a reminder set up for ${timeString}`,
       };
     }
 
@@ -33,12 +40,12 @@ async function setupReminderCommand(text, user, { db }) {
     db.get("users")
       .find(user)
       .assign({
-        reminders
+        reminders,
       })
       .write();
 
     return {
-      text: `Sure! I'll remind you about intratime every day at ${timeString}`
+      text: `Sure! I'll remind you about intratime every day at ${timeString}`,
     };
   }
 }
@@ -50,7 +57,7 @@ async function listRemindersCommand(text, user) {
     const reminders = user.reminders || [];
     if (!reminders.length) {
       return {
-        text: `You don't have any reminder set up`
+        text: `You don't have any reminder set up`,
       };
     }
 
@@ -61,33 +68,33 @@ async function listRemindersCommand(text, user) {
           text: {
             type: "mrkdwn",
             text: `Here's the list of the reminders you've set up:\n\n${reminders
-              .map(time => `- ${time}`)
-              .join(`\n`)}`
-          }
+              .map((time) => `- ${time}`)
+              .join(`\n`)}`,
+          },
         },
         {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `Select a reminder to delete from the list`
+            text: `Select a reminder to delete from the list`,
           },
           accessory: {
             type: "static_select",
             action_id: "delete-reminder",
             placeholder: {
               type: "plain_text",
-              text: "Delete a reminder"
+              text: "Delete a reminder",
             },
-            options: reminders.map(time => ({
+            options: reminders.map((time) => ({
               text: {
                 type: "plain_text",
-                text: time
+                text: time,
               },
-              value: time
-            }))
-          }
-        }
-      ]
+              value: time,
+            })),
+          },
+        },
+      ],
     };
   }
 }
@@ -96,19 +103,16 @@ async function processIM(event, db) {
   const { actions, response_url } = event;
   const action = actions[0];
 
-  const updateMessage = text =>
+  const updateMessage = (text) =>
     post(response_url, {
       body: {
         replace_original: "true",
-        text
+        text,
       },
-      json: true
+      json: true,
     });
 
-  const user = db
-    .get("users")
-    .find({ id: event.channel.id })
-    .value();
+  const user = db.get("users").find({ id: event.channel.id }).value();
 
   if (!user) {
     return updateMessage(
@@ -120,12 +124,12 @@ async function processIM(event, db) {
     const reminder = action.selected_option.value;
 
     let reminders = user.reminders || [];
-    reminders = reminders.filter(time => time !== reminder);
+    reminders = reminders.filter((time) => time !== reminder);
 
     db.get("users")
       .find(user)
       .assign({
-        reminders
+        reminders,
       })
       .write();
 
@@ -166,7 +170,7 @@ async function processIM(event, db) {
     await actionMsg;
     return updateMessage(
       `Done! I've filled all the intratimes of ${
-      isToday(date) ? "today" : dateStr
+        isToday(date) ? "today" : dateStr
       } for you`
     );
   }
@@ -188,7 +192,7 @@ async function processIM(event, db) {
     await actionMsg;
     return updateMessage(
       `Done! I've filled the intratimes of ${
-      isToday(date) ? "today" : dateStr
+        isToday(date) ? "today" : dateStr
       } (half day) for you`
     );
   }
@@ -204,17 +208,20 @@ async function sendReminders(db, slackWeb) {
 
   const users = db
     .get("users")
-    .filter(user => {
-      const todayReminders = (user.reminders || []).map(time => {
-        const [hours, minutes] = time.split(":").map(s => Number(s));
-        return zonedTimeToUtc(set(now, {
-          hours,
-          minutes,
-          seconds: 0
-        }), 'Europe/Madrid').getTime();
+    .filter((user) => {
+      const todayReminders = (user.reminders || []).map((time) => {
+        const [hours, minutes] = time.split(":").map((s) => Number(s));
+        return zonedTimeToUtc(
+          set(now, {
+            hours,
+            minutes,
+            seconds: 0,
+          }),
+          "Europe/Madrid"
+        ).getTime();
       });
       const lastReminder = user.lastReminder || user.registered || 0;
-      return todayReminders.some(time => time > lastReminder && time <= now);
+      return todayReminders.some((time) => time > lastReminder && time <= now);
     })
     .value();
 
@@ -238,15 +245,15 @@ async function sendReminders(db, slackWeb) {
         status.type === Action.CheckIn
           ? "Break"
           : status.type === Action.Break
-            ? "Return"
-            : status.type === Action.Return
-              ? "CheckOut"
-              : undefined;
+          ? "Return"
+          : status.type === Action.Return
+          ? "CheckOut"
+          : undefined;
 
       if (!nextAction) {
         await slackWeb.chat.postMessage({
           text: `Hey! You asked me to remind you for intratime now, but it seems like you've already checked out for today, so I can't really help you.`,
-          channel
+          channel,
         });
       } else {
         await slackWeb.chat.postMessage({
@@ -255,8 +262,8 @@ async function sendReminders(db, slackWeb) {
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `Hey! You asked me to remind you about intratime - Based on your status, you can now ${nextAction}`
-              }
+                text: `Hey! You asked me to remind you about intratime - Based on your status, you can now ${nextAction}`,
+              },
             },
             {
               type: "actions",
@@ -265,37 +272,39 @@ async function sendReminders(db, slackWeb) {
                   type: "button",
                   text: {
                     type: "plain_text",
-                    text: nextAction + " (Now)"
+                    text: nextAction + " (Now)",
                   },
                   value: nextAction + "/" + today,
-                  action_id: "reminder-action"
-                }
-              ]
-            }
+                  action_id: "reminder-action",
+                },
+              ],
+            },
           ],
-          channel
+          channel,
         });
       }
     } else {
-      const fillDayBtn = isHalfDay ? {
-        type: "button",
-        text: {
-          type: "plain_text",
-          text: "Fill half day"
-        },
-        value: "FillHalfDay/" + today,
-        action_id: "reminder-fill-half"
-      } : {
-          type: "button",
-          text: {
-            type: "plain_text",
-            text: "Fill all day"
-          },
-          value: "FillAllDay/" + today,
-          action_id: "reminder-fill"
-        };
+      const fillDayBtn = isHalfDay
+        ? {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: "Fill half day",
+            },
+            value: "FillHalfDay/" + today,
+            action_id: "reminder-fill-half",
+          }
+        : {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: "Fill all day",
+            },
+            value: "FillAllDay/" + today,
+            action_id: "reminder-fill",
+          };
 
-      const halfDayGreeting = isHalfDay ? `It's an August Friday! :D ` : '';
+      const halfDayGreeting = isHalfDay ? `It's an August Friday! :D ` : "";
 
       await slackWeb.chat.postMessage({
         blocks: [
@@ -303,8 +312,8 @@ async function sendReminders(db, slackWeb) {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `Hey! ${halfDayGreeting}You asked me to remind you about intratime - Do you want to fill all of today\'s intratimes or just check in?`
-            }
+              text: `Hey! ${halfDayGreeting}You asked me to remind you about intratime - Do you want to fill all of today\'s intratimes or just check in?`,
+            },
           },
           {
             type: "actions",
@@ -314,30 +323,30 @@ async function sendReminders(db, slackWeb) {
                 type: "button",
                 text: {
                   type: "plain_text",
-                  text: "Check In"
+                  text: "Check In",
                 },
                 value: "CheckIn/" + today,
-                action_id: "reminder-action"
-              }
-            ]
-          }
+                action_id: "reminder-action",
+              },
+            ],
+          },
         ],
-        channel
+        channel,
       });
     }
 
     db.get("users")
       .find(user)
       .assign({
-        lastReminder: Date.now()
+        lastReminder: Date.now(),
       })
       .write();
   }
 }
 
 const setupReminders = (db, slackWeb) => {
-  sendReminders(db, slackWeb);
-  cron.schedule("* * * * *", () => sendReminders(db, slackWeb));
+  // sendReminders(db, slackWeb);
+  // cron.schedule("* * * * *", () => sendReminders(db, slackWeb));
 };
 
 module.exports = {
@@ -346,6 +355,6 @@ module.exports = {
   processIM,
   help: [
     "`remind HH:MM`: Set up a daily reminder for intratime",
-    "`remind list`: List the reminders set up to delete them"
-  ]
+    "`remind list`: List the reminders set up to delete them",
+  ],
 };
