@@ -7,6 +7,7 @@
     "@slack/web-api": "^5.4.0",
     "date-fns": "2.6.0",
     "date-fns-tz": "^1.0.9",
+    "jwt-decode": "^3.1.2",
     "koa": "^2.8.1",
     "koa-bodyparser": "^4.2.1",
     "koa-cors": "^0.0.16",

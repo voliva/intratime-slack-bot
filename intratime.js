@@ -3,6 +3,7 @@ const util = require("util");
 const post = util.promisify(request.post);
 const get = util.promisify(request.get);
 const { applyTimeString } = require("./features/utils");
+const jwt_decode = require('jwt-decode');
 
 const Action = {
   CheckIn: 0,
@@ -25,24 +26,19 @@ const actionOrder = [
 ];
 
 const baseUrl = "https://weareadaptive.woffu.com";
-const headers = (apiKey) => ({
+const headers = (token) => ({
   "Content-Type": "application/json",
   Accept: "application/json",
-  Authorization: `Basic ${apiKey}`,
+  Authorization: `Bearer ${token}`,
 });
 
-async function login(apiKey) {
-  // I think I need to know the user id beforehand for every subsequent request. How to do it from API key?
-  // Otherwise I'll need the user's.
-  // Or maybe I can have only one API key and manage other users with just their ID? O.O
+async function login(user, password) {
   return btoa(apiKey + ":") + ";" + "TODO user id";
 }
 
 async function getStatus(token) {
-  const [apiKey, userId] = token.split(";");
-
-  const result = await get(`${baseUrl}/api/v1/users/${userId}/signs`, {
-    headers: headers(apiKey),
+  const result = await get(`${baseUrl}/api/signs`, {
+    headers: headers(token),
   });
 
   if (result.statusCode >= 500) {
@@ -64,15 +60,13 @@ async function getStatus(token) {
   }
 
   return {
-    type: resultObj[0].SignIn ? Action.CheckIn : Action.CheckOut,
-    date: resultObj[0].Date,
+    type: resultObj[resultObj.length-1].SignIn ? Action.CheckIn : Action.CheckOut,
+    date: resultObj[resultObj.length-1].Date + "Z",
   };
 }
 
 const TIME_RANDOMNESS = 1000 * 60 * 5;
 async function submitClocking(token, action, dateTime, random) {
-  const [apiKey, userId] = token.split(";");
-
   if (random) {
     const extraTime = Math.trunc(
       Math.random() * TIME_RANDOMNESS - TIME_RANDOMNESS / 2
@@ -80,30 +74,25 @@ async function submitClocking(token, action, dateTime, random) {
     dateTime = new Date(dateTime.getTime() + extraTime);
   }
 
-  const resultObj = await post(`${baseUrl}/api/v1/signs`, {
+  const { UserId } = jwt_decode(token)
+  const resultObj = await post(`${baseUrl}/api/svc/signs/signs`, {
     json: {
-      sign: {
-        UserId: userId,
-        Date: dateTime.toISOString(),
-        SignIn: action === Action.CheckIn || action === Action.Return,
-      },
+      DeviceId: "SlackBot",
+      Date: dateTime.toISOString(),
+      UserId,
+      SignIn: action === Action.CheckIn || action === Action.Return,
     },
-    headers: headers(apiKey),
+    headers: headers(token),
   });
 
   if (resultObj.statusCode > 400) {
-    let serverMessage = "";
-    try {
-      serverMessage = JSON.parse(resultObj.body).message;
-    } catch (ex) {}
-
     throw new Error(
-      `Service returned error: ${resultObj.statusCode} ${resultObj.statusMessage}. ${serverMessage}`
+      `Service returned error: ${resultObj.statusCode} ${resultObj.statusMessage}. ${JSON.stringify(resultObj.body)}`
     );
   }
-  if (resultObj.statusCode !== 200) {
+  if (resultObj.statusCode !== 201) {
     throw new Error(
-      `Service returned unexpected status: ${resultObj.statusCode} ${resultObj.body}`
+      `Service returned unexpected status: ${resultObj.statusCode} ${JSON.stringify(resultObj.body)}`
     );
   }
   return true;
