@@ -3,7 +3,7 @@ const util = require("util");
 const post = util.promisify(request.post);
 const get = util.promisify(request.get);
 const { applyTimeString } = require("./features/utils");
-const jwt_decode = require('jwt-decode');
+const jwt_decode = require("jwt-decode");
 
 const Action = {
   CheckIn: 0,
@@ -60,8 +60,10 @@ async function getStatus(token) {
   }
 
   return {
-    type: resultObj[resultObj.length-1].SignIn ? Action.CheckIn : Action.CheckOut,
-    date: resultObj[resultObj.length-1].Date + "Z",
+    type: resultObj[resultObj.length - 1].SignIn
+      ? Action.CheckIn
+      : Action.CheckOut,
+    date: resultObj[resultObj.length - 1].Date + "Z",
   };
 }
 
@@ -74,7 +76,7 @@ async function submitClocking(token, action, dateTime, random) {
     dateTime = new Date(dateTime.getTime() + extraTime);
   }
 
-  const { UserId } = jwt_decode(token)
+  const { UserId } = jwt_decode(token);
   const resultObj = await post(`${baseUrl}/api/svc/signs/signs`, {
     json: {
       DeviceId: "SlackBot",
@@ -87,12 +89,16 @@ async function submitClocking(token, action, dateTime, random) {
 
   if (resultObj.statusCode > 400) {
     throw new Error(
-      `Service returned error: ${resultObj.statusCode} ${resultObj.statusMessage}. ${JSON.stringify(resultObj.body)}`
+      `Service returned error: ${resultObj.statusCode} ${
+        resultObj.statusMessage
+      }. ${JSON.stringify(resultObj.body)}`
     );
   }
   if (resultObj.statusCode !== 201) {
     throw new Error(
-      `Service returned unexpected status: ${resultObj.statusCode} ${JSON.stringify(resultObj.body)}`
+      `Service returned unexpected status: ${
+        resultObj.statusCode
+      } ${JSON.stringify(resultObj.body)}`
     );
   }
   return true;

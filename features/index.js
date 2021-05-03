@@ -7,7 +7,7 @@ const logQuery = require("./logQuery");
 const allModules = [actions, register, status, reminders];
 
 function routes(router, db, slackWeb) {
-  allModules.forEach(m => m.routes && m.routes(router, db, slackWeb));
+  allModules.forEach((m) => m.routes && m.routes(router, db, slackWeb));
 }
 
 async function processMessage(text, user, deps) {
@@ -20,15 +20,15 @@ async function processMessage(text, user, deps) {
       submitClocking: (...args) =>
         postMessage({
           text: `TEST - submitClocking(${args
-            .map(v => JSON.stringify(v))
-            .join(", ")})`
+            .map((v) => JSON.stringify(v))
+            .join(", ")})`,
         }),
       fillAllDay: (...args) =>
         postMessage({
           text: `TEST - fillAllDay(${args
-            .map(v => JSON.stringify(v))
-            .join(", ")})`
-        })
+            .map((v) => JSON.stringify(v))
+            .join(", ")})`,
+        }),
     };
   }
 
@@ -52,11 +52,11 @@ async function processMessage(text, user, deps) {
   );
 
   return {
-    text: `Possible commands:\n${commandHelp.join(`\n`)}`
+    text: `Possible commands:\n${commandHelp.join(`\n`)}`,
   };
 }
 
 module.exports = {
   routes,
-  processMessage
+  processMessage,
 };

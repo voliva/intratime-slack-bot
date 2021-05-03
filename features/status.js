@@ -7,7 +7,7 @@ async function statusCommand(text, user, { intratime }) {
 
       if (!status) {
         return {
-          text: `I couldn't fetch your status :(`
+          text: `I couldn't fetch your status :(`,
         };
       }
 
@@ -16,11 +16,11 @@ async function statusCommand(text, user, { intratime }) {
       )[0];
 
       return {
-        text: `Your last action was a "${action}" on ${status.date}`
+        text: `Your last action was a "${action}" on ${status.date}`,
       };
     } catch (ex) {
       return {
-        text: `I couldn't fetch your status :(`
+        text: `I couldn't fetch your status :(`,
       };
     }
   }
@@ -30,5 +30,5 @@ async function statusCommand(text, user, { intratime }) {
 
 module.exports = {
   commands: [statusCommand],
-  help: ["`status`: Gets the last intratime submitted"]
+  help: ["`status`: Gets the last intratime submitted"],
 };

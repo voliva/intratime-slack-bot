@@ -2,8 +2,10 @@ const { login } = require("../intratime");
 const uuid = require("uuid/v4");
 
 const baseUrl = process.env.INTRATIME_URL;
-if(!baseUrl) {
-  console.error("This server needs a base url set in INTRATIME_URL env variable (e.g. https://example.com/intratime)");
+if (!baseUrl) {
+  console.error(
+    "This server needs a base url set in INTRATIME_URL env variable (e.g. https://example.com/intratime)"
+  );
   process.exit(1);
 }
 
@@ -15,7 +17,7 @@ function prepareRegisterUrl(userId, db) {
     tokenObj = {
       userId,
       token: uuid(),
-      timestamp: new Date().getTime()
+      timestamp: new Date().getTime(),
     };
     tokens.push(tokenObj).write();
   }
@@ -61,7 +63,7 @@ function routes(router, db, slackWeb) {
       if (userQuery.value()) {
         userQuery
           .assign({
-            token: userToken
+            token: userToken,
           })
           .write();
       } else {
@@ -69,7 +71,7 @@ function routes(router, db, slackWeb) {
           .push({
             id: userId,
             token: userToken,
-            registered: Date.now()
+            registered: Date.now(),
           })
           .write();
       }
@@ -79,7 +81,7 @@ function routes(router, db, slackWeb) {
       const channel = userId;
       slackWeb.chat.postMessage({
         text: `I've just registered you, welcome! How can I help?`,
-        channel
+        channel,
       });
     });
 }
@@ -89,7 +91,7 @@ async function registerCommand(text, user, { db }) {
     const url = prepareRegisterUrl(user.id, db);
 
     return {
-      text: `Sure thing! Use this link to register your credentials: ${url}`
+      text: `Sure thing! Use this link to register your credentials: ${url}`,
     };
   }
 
@@ -100,5 +102,5 @@ module.exports = {
   prepareRegisterUrl,
   routes,
   commands: [registerCommand],
-  help: ["`register`: Initializes intratime's token"]
+  help: ["`register`: Initializes intratime's token"],
 };
