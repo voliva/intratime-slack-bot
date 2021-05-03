@@ -1,137 +1,128 @@
 const request = require("request");
 const util = require("util");
 const post = util.promisify(request.post);
-const get = util.promisify(request.get);
+const put = util.promisify(request.put);
 const { applyTimeString } = require("./features/utils");
 const jwt_decode = require("jwt-decode");
+const { isToday } = require("date-fns");
 
-const Action = {
-  CheckIn: 0,
-  Return: 3, // => Break
-  CheckOut: 1, // => Return
-  Break: 2, // => CheckOut
-};
+const generateSign = (UserId, SignIn, date, Time) => ({
+  UserId,
+  SignIn,
+  SignStatus: 1,
+  Time,
+  ShortTrueTime: Time,
+  TrueDate: applyTimeString(date, "09:00:00").toISOString(),
+});
+const generateAllDay = (UserId, date) => ({
+  Comments: "",
+  Date: date.toISOString(),
+  Signs: [
+    generateSign(UserId, true, date, "09:00:00"),
+    generateSign(UserId, false, date, "13:00:00"),
+    generateSign(UserId, true, date, "14:00:00"),
+    generateSign(UserId, false, date, "18:00:00"),
+  ],
+  UserId,
+});
+const generateHalfDay = (UserId, date) => ({
+  Comments: "",
+  Date: date.toISOString(),
+  Signs: [
+    generateSign(UserId, true, date, "10:00:00"),
+    generateSign(UserId, false, date, "14:00:00"),
+  ],
+  UserId,
+});
 
-const defaultTimes = {
-  [Action.CheckIn]: "09:00:00",
-  [Action.Break]: "13:00:00",
-  [Action.Return]: "14:00:00",
-  [Action.CheckOut]: "18:00:00",
-};
-const actionOrder = [
-  Action.CheckIn,
-  Action.Break,
-  Action.Return,
-  Action.CheckOut,
-];
-
-const baseUrl = "https://weareadaptive.woffu.com";
 const headers = (token) => ({
   "Content-Type": "application/json",
   Accept: "application/json",
   Authorization: `Bearer ${token}`,
 });
 
-async function login(user, password) {
-  return btoa(apiKey + ":") + ";" + "TODO user id";
-}
-
-async function getStatus(token) {
-  const result = await get(`${baseUrl}/api/signs`, {
-    headers: headers(token),
+async function login(username, password) {
+  const result = await post(`https://app.woffu.com/token`, {
+    form: {
+      grant_type: "password",
+      username,
+      password,
+    },
   });
+  const { access_token } = JSON.parse(result.body);
 
-  if (result.statusCode >= 500) {
+  if (!access_token) {
     console.log(result.body);
-    throw new Error(`Internal server error`);
+    throw new Error("permission denied");
   }
-  if (result.statusCode >= 400) {
-    console.log(result.body);
-    throw new Error(`Invalid credentials`);
-  }
-
-  const resultObj = JSON.parse(result.body);
-  if (!Array.isArray(resultObj)) {
-    throw new Error(`Unknown error when getting status.\n${resultObj}`);
-  }
-
-  if (!resultObj.length) {
-    return false;
-  }
-
-  return {
-    type: resultObj[resultObj.length - 1].SignIn
-      ? Action.CheckIn
-      : Action.CheckOut,
-    date: resultObj[resultObj.length - 1].Date + "Z",
-  };
+  return access_token;
 }
 
-const TIME_RANDOMNESS = 1000 * 60 * 5;
-async function submitClocking(token, action, dateTime, random) {
-  if (random) {
-    const extraTime = Math.trunc(
-      Math.random() * TIME_RANDOMNESS - TIME_RANDOMNESS / 2
-    );
-    dateTime = new Date(dateTime.getTime() + extraTime);
+async function fillAllDay(db, token, date) {
+  if (isToday(date)) {
+    enqueueFill(db, token, date, true);
+    return "scheduled";
   }
 
   const { UserId } = jwt_decode(token);
-  const resultObj = await post(`${baseUrl}/api/svc/signs/signs`, {
-    json: {
-      DeviceId: "SlackBot",
-      Date: dateTime.toISOString(),
-      UserId,
-      SignIn: action === Action.CheckIn || action === Action.Return,
-    },
+  await put("https://app.woffu.com/api/diaries/selfSigns", {
     headers: headers(token),
+    json: generateAllDay(UserId, date),
   });
-
-  if (resultObj.statusCode > 400) {
-    throw new Error(
-      `Service returned error: ${resultObj.statusCode} ${
-        resultObj.statusMessage
-      }. ${JSON.stringify(resultObj.body)}`
-    );
-  }
-  if (resultObj.statusCode !== 201) {
-    throw new Error(
-      `Service returned unexpected status: ${
-        resultObj.statusCode
-      } ${JSON.stringify(resultObj.body)}`
-    );
-  }
-  return true;
 }
 
-async function fillAllDay(token, date) {
-  for (let action of actionOrder) {
-    const time = defaultTimes[action];
-    const dateTime = applyTimeString(date, time);
-    await submitClocking(token, action, dateTime, true);
+async function fillHalfDay(db, token, date) {
+  if (isToday(date)) {
+    enqueueFill(db, token, date, false);
+    return "scheduled";
+  }
+
+  const { UserId } = jwt_decode(token);
+  await put("https://app.woffu.com/api/diaries/selfSigns", {
+    headers: headers(token),
+    json: generateHalfDay(UserId, date),
+  });
+}
+
+function enqueueFill(db, token, date, full) {
+  const { exp } = jwt_decode(token);
+  if (isAfter(Date.now() + 24 * 60 * 60 * 1000, exp)) {
+    throw new Error("token will expire");
+  }
+
+  const scheduledFills = db.get("scheduledFills");
+  if (scheduledFills.find({ token }).value()) {
+    throw new Error("already scheduled");
+  }
+  scheduledFills.push({ token, date, full }).write();
+}
+
+async function dailyFills(db) {
+  const fills = db.get("scheduledFills").value();
+  db.get("scheduledFills")
+    .remove(() => true)
+    .write();
+
+  for (let k of fills) {
+    try {
+      if (k.full) {
+        await fillAllDay(db, k.token, k.date);
+      } else {
+        await fillHalfDay(db, k.token, k.date);
+      }
+    } catch (ex) {
+      console.log(ex);
+    }
   }
 }
 
-async function fillHalfDay(token, date) {
-  await submitClocking(
-    token,
-    Action.CheckIn,
-    applyTimeString(date, "10:00:00"),
-    true
-  );
-  await submitClocking(
-    token,
-    Action.CheckOut,
-    applyTimeString(date, "14:00:00"),
-    true
-  );
-}
+const setupDailyFills = (db, slackWeb) => {
+  cron.schedule("0 0 * * *", () => dailyFills(db, slackWeb));
+};
 
 module.exports = {
   login,
-  getStatus,
-  submitClocking,
+  setupDailyFills,
   fillAllDay,
   fillHalfDay,
-  Action,
 };

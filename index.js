@@ -11,6 +11,8 @@ const { prepareRegisterUrl } = require("./features/register");
 const { setupReminders, processIM } = require("./features/reminders");
 const intratime = require("./intratime");
 
+intratime.setupDailyFills();
+
 const oauthToken = process.env.SLACK_TOKEN;
 if (!oauthToken) {
   console.error(
@@ -25,6 +27,7 @@ const db = low(adapter);
 db.defaults({
   users: [],
   tokens: [],
+  scheduledFills: [],
 }).write();
 
 setupReminders(db, slackWeb);

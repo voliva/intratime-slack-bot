@@ -1,10 +1,8 @@
-const actions = require("./actions");
 const register = require("./register");
-const status = require("./status");
 const reminders = require("./reminders");
 const logQuery = require("./logQuery");
 
-const allModules = [actions, register, status, reminders];
+const allModules = [register, reminders];
 
 function routes(router, db, slackWeb) {
   allModules.forEach((m) => m.routes && m.routes(router, db, slackWeb));

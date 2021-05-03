@@ -11,13 +11,7 @@ const cron = require("node-cron");
 const request = require("request");
 const util = require("util");
 const post = util.promisify(request.post);
-const {
-  getStatus,
-  Action,
-  submitClocking,
-  fillAllDay,
-  fillHalfDay,
-} = require("../intratime");
+const { fillAllDay, fillHalfDay } = require("../intratime");
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 
@@ -27,74 +21,30 @@ async function setupReminderCommand(text, user, { db }) {
     const time = query[1].split(":");
     const timeString = time.slice(0, 2).join(":");
 
-    const reminders = user.reminders || [];
-    if (reminders.includes(timeString)) {
-      return {
-        text: `You already had a reminder set up for ${timeString}`,
-      };
-    }
-
-    reminders.push(timeString);
-    reminders.sort();
-
     db.get("users")
       .find(user)
       .assign({
-        reminders,
+        reminder: timeString,
       })
       .write();
 
     return {
-      text: `Sure! I'll remind you about intratime every day at ${timeString}`,
+      text: `Sure! I'll remind you about woffu every day at ${timeString}`,
     };
   }
 }
 
-async function listRemindersCommand(text, user) {
-  const query = text.split(" ");
-
-  if (query[0] === "remind" && query[1] === "list") {
-    const reminders = user.reminders || [];
-    if (!reminders.length) {
-      return {
-        text: `You don't have any reminder set up`,
-      };
-    }
+async function stopReminderCommand(text, user, { db }) {
+  if (text.startsWith("remind stop")) {
+    db.get("users")
+      .find(user)
+      .assign({
+        reminder: undefined,
+      })
+      .write();
 
     return {
-      blocks: [
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: `Here's the list of the reminders you've set up:\n\n${reminders
-              .map((time) => `- ${time}`)
-              .join(`\n`)}`,
-          },
-        },
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: `Select a reminder to delete from the list`,
-          },
-          accessory: {
-            type: "static_select",
-            action_id: "delete-reminder",
-            placeholder: {
-              type: "plain_text",
-              text: "Delete a reminder",
-            },
-            options: reminders.map((time) => ({
-              text: {
-                type: "plain_text",
-                text: time,
-              },
-              value: time,
-            })),
-          },
-        },
-      ],
+      text: `Alright, I won't remind you about woffu anymore`,
     };
   }
 }
@@ -120,38 +70,6 @@ async function processIM(event, db) {
     );
   }
 
-  if (action.action_id === "delete-reminder") {
-    const reminder = action.selected_option.value;
-
-    let reminders = user.reminders || [];
-    reminders = reminders.filter((time) => time !== reminder);
-
-    db.get("users")
-      .find(user)
-      .assign({
-        reminders,
-      })
-      .write();
-
-    await updateMessage(`Done - I won't remind you at ${reminder}`);
-  }
-  if (action.action_id === "reminder-action") {
-    const value = action.value.split("/");
-    const date = new Date(`${value[3]}-${value[2]}-${value[1]}`);
-
-    if (!isToday(date)) {
-      const suggestion = `{check in/check out/break/return} ${value[1]}-${value[2]}-${value[3]} {time}`;
-      return updateMessage(
-        `Sorry, but that action has expired, as it's from a past date - Use "${suggestion}" if you still want to ${value[0]}`
-      );
-    }
-
-    const actionMsg = updateMessage(`Sure - Give me just a second`);
-    await submitClocking(user.token, Action[value[0]], new Date(), false);
-
-    await actionMsg;
-    return updateMessage(`Done! I've performed the action ${value[0]} for you`);
-  }
   if (action.action_id === "reminder-fill") {
     const value = action.value.split("/");
     const dateStr = `${value[3]}-${value[2]}-${value[1]}`;
@@ -165,11 +83,16 @@ async function processIM(event, db) {
     }
 
     const actionMsg = updateMessage(`Sure - Give me just a few seconds`);
-    await fillAllDay(user.token, date);
+    const result = await fillAllDay(db, user.token, date);
 
     await actionMsg;
+    if (result === "scheduled") {
+      return updateMessage(
+        `As I can't fill future hours, I've scheduled to fill the day for you tonight.`
+      );
+    }
     return updateMessage(
-      `Done! I've filled all the intratimes of ${
+      `Done! I've filled all the woffus of ${
         isToday(date) ? "today" : dateStr
       } for you`
     );
@@ -187,11 +110,16 @@ async function processIM(event, db) {
     }
 
     const actionMsg = updateMessage(`Sure - Give me just a few seconds`);
-    await fillHalfDay(user.token, date);
+    const result = await fillHalfDay(db, user.token, date);
 
     await actionMsg;
+    if (result === "scheduled") {
+      return updateMessage(
+        `As I can't fill future hours, I've scheduled to fill the half day for you tonight.`
+      );
+    }
     return updateMessage(
-      `Done! I've filled the intratimes of ${
+      `Done! I've filled the woffus of ${
         isToday(date) ? "today" : dateStr
       } (half day) for you`
     );
@@ -209,131 +137,75 @@ async function sendReminders(db, slackWeb) {
   const users = db
     .get("users")
     .filter((user) => {
-      const todayReminders = (user.reminders || []).map((time) => {
-        const [hours, minutes] = time.split(":").map((s) => Number(s));
-        return zonedTimeToUtc(
-          set(now, {
-            hours,
-            minutes,
-            seconds: 0,
-          }),
-          "Europe/Madrid"
-        ).getTime();
-      });
+      if (!user.reminder) return false;
+
+      const [hours, minutes] = user.reminder.split(":").map((s) => Number(s));
+      const reminder = zonedTimeToUtc(
+        set(now, {
+          hours,
+          minutes,
+          seconds: 0,
+        }),
+        "Europe/Madrid"
+      ).getTime();
+
       const lastReminder = user.lastReminder || user.registered || 0;
-      return todayReminders.some((time) => time > lastReminder && time <= now);
+      return reminder > lastReminder && reminder <= now;
     })
     .value();
 
   for (let user of users) {
     const channel = user.id;
 
-    let status;
-    try {
-      status = await getStatus(user.token);
-    } catch (ex) {
-      console.error("sendReminders - getStatus failed for user ", user.id, ex);
-    }
-    if (!status) {
-      console.error("sendReminders - Unkown status for user ", user.id);
-      continue;
-    }
+    const fillDayBtn = isHalfDay
+      ? {
+          type: "button",
+          text: {
+            type: "plain_text",
+            text: "Fill half day",
+          },
+          value: "FillHalfDay/" + today,
+          action_id: "reminder-fill-half",
+        }
+      : {
+          type: "button",
+          text: {
+            type: "plain_text",
+            text: "Fill all day",
+          },
+          value: "FillAllDay/" + today,
+          action_id: "reminder-fill",
+        };
 
-    const statusDate = new Date(status.date);
-    if (isToday(statusDate)) {
-      const nextAction =
-        status.type === Action.CheckIn
-          ? "Break"
-          : status.type === Action.Break
-          ? "Return"
-          : status.type === Action.Return
-          ? "CheckOut"
-          : undefined;
+    const halfDayGreeting = isHalfDay ? `It's an August Friday! :D ` : "";
 
-      if (!nextAction) {
-        await slackWeb.chat.postMessage({
-          text: `Hey! You asked me to remind you for intratime now, but it seems like you've already checked out for today, so I can't really help you.`,
-          channel,
-        });
-      } else {
-        await slackWeb.chat.postMessage({
-          blocks: [
+    await slackWeb.chat.postMessage({
+      blocks: [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `Hey! ${halfDayGreeting}You asked me to remind you about woffu - Do you want to fill all of today\'s woffus or just check in?`,
+          },
+        },
+        {
+          type: "actions",
+          elements: [
+            fillDayBtn,
             {
-              type: "section",
+              type: "button",
               text: {
-                type: "mrkdwn",
-                text: `Hey! You asked me to remind you about intratime - Based on your status, you can now ${nextAction}`,
+                type: "plain_text",
+                text: "Check In",
               },
-            },
-            {
-              type: "actions",
-              elements: [
-                {
-                  type: "button",
-                  text: {
-                    type: "plain_text",
-                    text: nextAction + " (Now)",
-                  },
-                  value: nextAction + "/" + today,
-                  action_id: "reminder-action",
-                },
-              ],
+              value: "CheckIn/" + today,
+              action_id: "reminder-action",
             },
           ],
-          channel,
-        });
-      }
-    } else {
-      const fillDayBtn = isHalfDay
-        ? {
-            type: "button",
-            text: {
-              type: "plain_text",
-              text: "Fill half day",
-            },
-            value: "FillHalfDay/" + today,
-            action_id: "reminder-fill-half",
-          }
-        : {
-            type: "button",
-            text: {
-              type: "plain_text",
-              text: "Fill all day",
-            },
-            value: "FillAllDay/" + today,
-            action_id: "reminder-fill",
-          };
-
-      const halfDayGreeting = isHalfDay ? `It's an August Friday! :D ` : "";
-
-      await slackWeb.chat.postMessage({
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `Hey! ${halfDayGreeting}You asked me to remind you about intratime - Do you want to fill all of today\'s intratimes or just check in?`,
-            },
-          },
-          {
-            type: "actions",
-            elements: [
-              fillDayBtn,
-              {
-                type: "button",
-                text: {
-                  type: "plain_text",
-                  text: "Check In",
-                },
-                value: "CheckIn/" + today,
-                action_id: "reminder-action",
-              },
-            ],
-          },
-        ],
-        channel,
-      });
-    }
+        },
+      ],
+      channel,
+    });
 
     db.get("users")
       .find(user)
@@ -351,10 +223,10 @@ const setupReminders = (db, slackWeb) => {
 
 module.exports = {
   setupReminders,
-  commands: [setupReminderCommand, listRemindersCommand],
+  commands: [setupReminderCommand, stopReminderCommand],
   processIM,
   help: [
-    "`remind HH:MM`: Set up a daily reminder for intratime",
-    "`remind list`: List the reminders set up to delete them",
+    "`remind HH:MM`: Set up a daily reminder for woffu",
+    "`remind stop`: Stop reminding plz",
   ],
 };

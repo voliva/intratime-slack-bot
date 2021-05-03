@@ -1,4 +1,4 @@
-const { getStatus, submitClocking, Action } = require("./intratime");
+const { submitClocking, Action } = require("./intratime");
 
 const hoursAgo = new Date();
 hoursAgo.setTime(hoursAgo.getTime() - 4 * 60 * 60 * 1000);
