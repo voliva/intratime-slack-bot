@@ -100,25 +100,26 @@ function enqueueFill(db, token, date, full) {
 
 async function dailyFills(db) {
   const fills = db.get("scheduledFills").value();
-  db.get("scheduledFills")
-    .remove(() => true)
-    .write();
 
   for (let k of fills) {
     try {
       if (k.full) {
-        await fillAllDay(db, k.token, k.date);
+        await fillAllDay(db, k.token, new Date(k.date));
       } else {
-        await fillHalfDay(db, k.token, k.date);
+        await fillHalfDay(db, k.token, new Date(k.date));
       }
     } catch (ex) {
       console.log(ex);
     }
   }
+
+  db.get("scheduledFills")
+    .remove(() => true)
+    .write();
 }
 
-const setupDailyFills = (db, slackWeb) => {
-  cron.schedule("0 0 * * *", () => dailyFills(db, slackWeb));
+const setupDailyFills = (db) => {
+  cron.schedule("0 0 * * *", () => dailyFills(db));
 };
 
 module.exports = {
