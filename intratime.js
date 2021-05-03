@@ -4,7 +4,8 @@ const post = util.promisify(request.post);
 const put = util.promisify(request.put);
 const { applyTimeString } = require("./features/utils");
 const jwt_decode = require("jwt-decode");
-const { isToday } = require("date-fns");
+const { isToday, isAfter } = require("date-fns");
+const cron = require("node-cron");
 
 const generateSign = (UserId, SignIn, date, Time) => ({
   UserId,
@@ -86,7 +87,7 @@ async function fillHalfDay(db, token, date) {
 
 function enqueueFill(db, token, date, full) {
   const { exp } = jwt_decode(token);
-  if (isAfter(Date.now() + 24 * 60 * 60 * 1000, exp)) {
+  if (isAfter(Date.now() + 24 * 60 * 60 * 1000, exp * 1000)) {
     throw new Error("token will expire");
   }
 
