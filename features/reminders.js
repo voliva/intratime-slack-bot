@@ -185,23 +185,12 @@ async function sendReminders(db, slackWeb) {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `Hey! ${halfDayGreeting}You asked me to remind you about woffu - Do you want to fill all of today\'s woffus or just check in?`,
+            text: `Hey! ${halfDayGreeting}You asked me to remind you about woffu - Do you want to fill all of today\'s woffus?`,
           },
         },
         {
           type: "actions",
-          elements: [
-            fillDayBtn,
-            {
-              type: "button",
-              text: {
-                type: "plain_text",
-                text: "Check In",
-              },
-              value: "CheckIn/" + today,
-              action_id: "reminder-action",
-            },
-          ],
+          elements: [fillDayBtn],
         },
       ],
       channel,
@@ -227,6 +216,6 @@ module.exports = {
   processIM,
   help: [
     "`remind HH:MM`: Set up a daily reminder for woffu",
-    "`remind stop`: Stop reminding plz",
+    "`remind stop`: Stop reminding please",
   ],
 };
