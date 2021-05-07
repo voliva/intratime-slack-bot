@@ -83,20 +83,28 @@ async function processIM(event, db) {
     }
 
     const actionMsg = updateMessage(`Sure - Give me just a few seconds`);
-    const result = await fillAllDay(db, user.token, date);
+    try {
+      const result = await fillAllDay(db, user.token, date);
 
-    await actionMsg;
-    if (result === "scheduled") {
+      await actionMsg;
+      if (result === "scheduled") {
+        return updateMessage(
+          `As I can't fill future hours, I've scheduled to fill the day for you tonight.`
+        );
+      }
       return updateMessage(
-        `As I can't fill future hours, I've scheduled to fill the day for you tonight.`
+        `Done! I've filled all the woffus of ${
+          isToday(date) ? "today" : dateStr
+        } for you`
       );
+    } catch (ex) {
+      try {
+        await actionMsg;
+      } catch (ex) {}
+      return updateMessage(`Sorry I couldn't do it: ` + ex.message);
     }
-    return updateMessage(
-      `Done! I've filled all the woffus of ${
-        isToday(date) ? "today" : dateStr
-      } for you`
-    );
   }
+
   if (action.action_id === "reminder-fill-half") {
     const value = action.value.split("/");
     const dateStr = `${value[3]}-${value[2]}-${value[1]}`;
@@ -197,7 +205,7 @@ async function sendReminders(db, slackWeb) {
     });
 
     db.get("users")
-      .find(user)
+      .find({ id: channel })
       .assign({
         lastReminder: Date.now(),
       })
