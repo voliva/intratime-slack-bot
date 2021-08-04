@@ -91,7 +91,7 @@ async function processEvent(event) {
     });
   }
 
-  const msg = await processMessage(insensitiveText, user, {
+  const msg = insensitiveText && (await processMessage(insensitiveText, user, {
     db,
     intratime,
     postMessage: (msg) =>
@@ -99,7 +99,7 @@ async function processEvent(event) {
         ...msg,
         channel,
       }),
-  });
+  }));
 
   if (msg) {
     return slackWeb.chat.postMessage({
