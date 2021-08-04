@@ -153,6 +153,7 @@ async function sendReminders(db, slackWeb) {
           hours,
           minutes,
           seconds: 0,
+	  milliseconds: 0
         }),
         "Europe/Madrid"
       ).getTime();
