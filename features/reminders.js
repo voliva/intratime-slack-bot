@@ -12,6 +12,7 @@ const request = require("request");
 const util = require("util");
 const post = util.promisify(request.post);
 const { fillAllDay, fillHalfDay } = require("../intratime");
+const { prepareRegisterUrl } = require("./register");
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 
@@ -101,6 +102,14 @@ async function processIM(event, db) {
       try {
         await actionMsg;
       } catch (ex) {}
+
+      if (ex.message === "token will expire") {
+        const url = prepareRegisterUrl(user.id, db);
+
+        return updateMessage(`⚠️⚠️⚠️ I can't schedule to fill your hours tonight because your token would expire ⚠️⚠️⚠️ \n\n
+        Please, use this url to refresh your token ${url}, and then run the "fill all day" command`);
+      }
+
       return updateMessage(`Sorry I couldn't do it: ` + ex.message);
     }
   }
