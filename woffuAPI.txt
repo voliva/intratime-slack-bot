@@ -1,0 +1,145 @@
+POST https://app.woffu.com/token HTTP/2.0
+content-type:	application/x-www-form-urlencoded
+content-length:	73
+accept-encoding:	gzip
+user-agent:	okhttp/3.12.1
+
+grant_type=password&username={{usr}}%40{{domain}}.com&password={{password}}
+
+{"access_token":"{{jwt}}","token_type":"bearer","expires_in":7775999,"userName":"{{email}}",".issued":"Sun, 02 May 2021 17:22:00 GMT",".expires":"Sat, 31 Jul 2021 17:22:00 GMT"}
+
+---
+
+Request URL: https://app.woffu.com/api/companies/companiesbyemail
+Request Method: GET
+authorization: Bearer {{jwt}}
+accept: application/json, text/plain, */*
+
+[{"$id":"1","CompanyId":22509,"Name":"Adaptive","MasterCompanyId":null,"FullName":"Adaptive","ImageName":"35SXovbNTMGPZR08Tl6B_adaptive.PNG","PartnerId":null,"Locations":null}]
+
+---
+
+Request URL: https://app.woffu.com/api/users
+Request Method: GET
+
+{"$id":"1","UserId":422677,"UserNumber":null,"Email":"{{email}}","NotificationEmail":null,"SignatureEmail":"422677@signature.woffu.com","Prefix":null,"Telephone":null,"Password":null,"FirstName":"Víctor","LastName":"Oliva Vidal","FullName":"Víctor Oliva Vidal","Acronym":"Vo","CompanyId":22509,"CompanyName":"Adaptive","CompanyDomain":null,"CompanyAllowGeoLocation":false,"TrueCompanyId":22509,"DateCreation":"2021-04-15T16:05:49.330","Birthday":"1990-11-20T00:00:00.000","IsResponsible":false,"IsAdmin":false,"Active":true,"ApiKey":null,"Weekends":null,"ApprovedDays":0.00000,"ApprovedHours":0.00000,"AllocatedDays":23.00000,"AllocatedHours":0.00000,"AllocatedFormatted":{"$id":"2","Resource":"_DaysFormatted","Values":["23"]},"UsedDays":0.00000,"UsedHours":0.00000,"UsedFormatted":{"$id":"3","Resource":"_DaysFormatted","Values":["0"]},"AccumulatedDays":7.62466,"AccumulatedHours":0.00000,"AvailableDays":23.00000,"AvailableHours":0.00000,"AvailableFormatted":{"$id":"4","Resource":"_DaysFormatted","Values":["23"]},"EnjoyedDays":0.00000,"EnjoyedHours":0.00000,"BalanceDays":7.62466,"BalanceHours":0.00000,"BalanceFormatted":{"$id":"5","Resource":"_DaysFormatted","Values":["7.62"]},"NextYearUsedDays":0.00000,"NextYearUsedHours":0.00000,"NextYearUsedFormatted":{"$id":"6","Resource":"_DaysFormatted","Values":["0"]},"ShortEmployeeStartDate":null,"ShortEmployeeEndDate":null,"ShortBirthday":"20/11/1990","LanguageId":1,"LanguageName":"Español","LanguageCulture":"es","DepartmentId":99626,"DepartmentFullName":"Consulting","DepartmentColor":"#B8D6E0","UseSign":true,"UseFtp":false,"JobTitleId":88810,"JobTitleName":"Web Developer","OfficeId":43236,"OfficeName":"Barcelona","OfficeLatitude":null,"OfficeLongitude":null,"OfficeRadius":null,"DocsRepositoryName":null,"DocsRepositoryFullName":null,"VacationPrivacyValue":0,"ResponsibleUserId":404733,"ResponsibleFullName":"Carla Cristina Pastrana Prato","AuthorizingUserId":null,"AuthorizingFullName":"","NIN":"47916937W","SSN":null,"ExternalLoginId":null,"SecretKey":null,"NotifyIgnoreSignsBefore":null,"NotifyIgnoreSignsAfter":null,"NotifyIgnoreHoursWorkedAfter":null,"ImageName":null,"ImageURL":null,"ImageURL2":"","ImageURL3":"","CalendarId":39960,"Calendar":{"$id":"7","CalendarId":39960,"CalendarNumber":null,"Name":"Barcelona","CompanyId":0,"OfficeId":null,"DirectionId":null,"Weekends":"0,6","AllowUpdates":false,"Office":null,"Direction":null},"AgreementId":30164,"Agreement":{"$id":"8","AgreementId":30164,"AgreementNumber":null,"Name":"Convenio Colectivo Estatal de Empresas de Consultoría y Estudios de mercado y de la opinión pública.","CompanyId":22509,"OfficeId":null,"UseCalendarDays":false,"UseAccumulatedDays":false,"StartDate":"2021-01-01T00:00:00.000","EndDate":"2021-12-31T00:00:00.000","TrueInitialDate":"2021-01-01T00:00:00.000","ExpirationDate":"2022-03-31T00:00:00.000","TrueExpirationDate":"2022-03-31T00:00:00.000","AccruedStartDate":"2021-01-01T00:00:00.000","AccruedEndDate":"2021-12-31T00:00:00.000","NextAllocationDate":"2021-12-31T00:00:00.000","UseExpirationDate":true,"StartNightTime":null,"EndNightTime":null,"Office":null,"TotalYearlyHours":null},"ScheduleId":92062,"Schedule":{"$id":"9","ScheduleId":92062,"ScheduleNumber":null,"Name":"General Oficina","CompanyId":0,"OfficeId":null,"AutoBreaks":false,"StartTolerance":null,"EndTolerance":null,"IgnoreSignsBefore":null,"IgnoreSignsAfter":null,"IgnoreHoursWorkedAfter":null,"MinBreaks":null,"ShowTrueHours":false,"NotifyScheduleLimit":false,"MaxScheduleHours":null,"Office":null},"ScheduleWeekNumber":1,"IsUpdated":true,"RefreshOn":null,"NewsReadOn":null,"ClientId":null,"Token":null,"IsMobileAccount":false,"SignDeviceTypes":7,"Deleted":false,"RoleId":3,"Role":{"$id":"10","RoleId":3,"Name":"User","CompanyId":null,"TotalUsers":0,"ResourceName":"_Role_User","Users":[],"Permissions":[]},"PermissionsKeys":",10,11,12,13,17,18,120,128,131,140,143,146,148,150,151,371,420,421,431,442,","PermissionScopes":",10,11,12,13,17,18,120,128,131,140,143,146,148,150,151,371,372!,420,421,431,442,","SignDeviceTypesName":"_SignOrigins_7","UseNewNavigation":false,"DismissNewNavigation":false,"AllowChangeNavigation":true,"Internal":false,"TeamResponsibleId":null,"ShowNotificationEmail":false}
+
+---
+
+Request URL: https://app.woffu.com/api/companies/22509
+Request Method: GET
+
+{"$id":"1","CompanyId":22509,"Name":"Adaptive","FiscalName":"Adaptive Consulting SLU","Domain":"weareadaptive.woffu.com","Code":"","CompanyNumber":"B66678996","DirectionId":73505,"TimeZoneId":105,"BillingDirectionId":73506,"SubscriptionId":19963,"PlanId":null,"DiscountPlanId":null,"TotalUsers":37,"StatusId":10,"MasterCompanyId":null,"Active":false,"Accepted":true,"ImageName":"35SXovbNTMGPZR08Tl6B_adaptive.PNG","ImageURL":"https://woffu.blob.core.windows.net/images/35SXovbNTMGPZR08Tl6B_adaptive.PNG","VacationPrivacyValue":0,"FtpAccountId":null,"CalendarId":39960,"AgreementId":30164,"PartnerId":null,"Partner2Id":null,"ScheduleId":92062,"AffiliateId":null,"ThemeId":null,"UseDiary":true,"UseSign":true,"NotifyDiaryIncidences":false,"NotifyDiaryNotConfirmedDay":null,"SignFromIP":false,"UsePresence":true,"IP":"83.54.140.143","RequestCancellationMandatory":false,"CAC":"","PrivatePlansIds":"","AllowGeoLocation":false,"FirstTransactionOn":null,"DateCreation":"2021-02-10T11:59:29.000","EstimatedUsers":35,"TotalDocsSize":0.0,"EndDate":null,"OnboardingDate":"2021-04-06T00:00:00.000","Direction":{"$id":"2","DirectionId":73505,"FirstName":"Carla","LastName":"","StreetAddress":"Avinguda Diagonal, 200, 5º piso","PostCode":"08018","CityId":10,"CountryId":1,"Email":"{{email}}","Telephone":"935 241 377","City":{"$id":"3","CityId":10,"Name":"Barcelona","RegionId":9,"Region":null},"Country":{"$id":"4","CountryId":1,"Name":"España","PostCodePattern":"","TwoLetterISOCode":"ES","LanguageId":1,"VAT":0.21,"InternationalCallingCode":"+34","DirectionId":null,"Direction":null}},"BillingDirection":{"$id":"5","DirectionId":73506,"FirstName":"Carla Pastrana","LastName":"Pastrana","StreetAddress":"Avinguda Diagonal 200, Planta 5","PostCode":"08018","CityId":10,"CountryId":1,"Email":"{{email}}","Telephone":"931597597","City":{"$id":"6","CityId":10,"Name":"Barcelona","RegionId":9,"Region":null},"Country":{"$id":"7","CountryId":1,"Name":"España","PostCodePattern":"","TwoLetterISOCode":"ES","LanguageId":1,"VAT":0.21,"InternationalCallingCode":"+34","DirectionId":null,"Direction":null}},"Subscription":{"$id":"8","SubscriptionId":19963,"CompanyId":22509,"PlanId":41,"UserPlanId":null,"Name":"Pro","Code":"","Price":0.0,"PricePerUser":0.0,"PartnerPrice":0.0,"PartnerPricePerUser":0.0,"StartDate":"2021-04-06T00:00:00.000","EndDate":"2022-04-07T00:00:00.000","NextPaymentDate":"2022-04-06T00:00:00.000","Cycle":12,"Paid":true,"Operational":true,"FreeUsers":0,"MinUsers":0,"MaxUsers":9999,"Rank":45,"MaxDocsSize":null,"MaxDocsSignatures":null,"TotalDocsSignatures":null,"PaymentMethodId":null,"LicenseTypeId":null,"ShortStartDate":null,"ShortEndDate":null,"ShortNextPaymentDate":null,"FreeTrialEndDate":null,"DocsSizePrice":0.0,"DocsSignaturePrice":0.0,"DocsSizeNextPaymentDate":null,"DocsSignatureNextPaymentDate":null,"Downgrade":false,"CreateNew":false,"FeaturesKeys":"1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,48,49,50,51,52,53,54,55,56,57,61,62,71,","Plan":null,"LicenseType":null,"Company":null,"PaymentMethod":null,"Discounts":null,"LastBillingDate":null},"Calendar":{"$id":"9","CalendarId":39960,"CalendarNumber":null,"Name":"Barcelona","CompanyId":0,"OfficeId":null,"DirectionId":null,"Weekends":"0,6","AllowUpdates":false,"Office":null,"Direction":null},"Agreement":{"$id":"10","AgreementId":30164,"AgreementNumber":null,"Name":"Convenio Colectivo Estatal de Empresas de Consultoría y Estudios de mercado y de la opinión pública.","CompanyId":0,"OfficeId":null,"UseCalendarDays":false,"UseAccumulatedDays":false,"StartDate":"0001-01-01T00:00:00.000","EndDate":"0001-01-01T00:00:00.000","TrueInitialDate":"0001-01-01T00:00:00.000","ExpirationDate":null,"TrueExpirationDate":"0001-01-01T00:00:00.000","AccruedStartDate":"0001-01-01T00:00:00.000","AccruedEndDate":"0001-01-01T00:00:00.000","NextAllocationDate":"0001-01-01T00:00:00.000","UseExpirationDate":false,"StartNightTime":null,"EndNightTime":null,"Office":null,"TotalYearlyHours":null},"Schedule":{"$id":"11","ScheduleId":92062,"ScheduleNumber":null,"Name":"General Oficina","CompanyId":0,"OfficeId":null,"AutoBreaks":false,"StartTolerance":null,"EndTolerance":null,"IgnoreSignsBefore":null,"IgnoreSignsAfter":null,"IgnoreHoursWorkedAfter":null,"MinBreaks":null,"ShowTrueHours":false,"NotifyScheduleLimit":false,"MaxScheduleHours":null,"Office":null},"Affiliate":null,"FirstAffiliate":{"$id":"12","AffiliateId":2046,"Name":"enac.woffu.com","Utm_source":null,"PlanId":null,"DiscountPlanId":null,"TrialPeriod":null,"Duration":0,"TotalVisits":0,"TotalRegisters":0},"Partner":null,"Partner2":null,"Language":{"$id":"13","LanguageId":1,"Name":"Español","Culture":"es"},"Theme":null,"RealPrice":1332.0000,"LTV":"LTV0066600.00"}
+
+---
+
+Request URL: https://app.woffu.com/api/companies/22509/settings
+Request Method: GET
+
+{"$id":"1","CompanyId":22509,"DefaultRoleId":3,"HoursFormatted":true,"UseDiary":true,"UseFtp":false,"WoffuBay":false,"UseSignByMotive":false}
+
+---
+
+Request URL: https://weareadaptive.woffu.com/api/languages/current
+Request Method: GET
+
+Auth through cookie woffu.token={{jwt}}
+
+null
+
+---
+
+Request URL: https://weareadaptive.woffu.com/api/users/token
+Request Method: GET
+Auth through cookie
+
+{"$id":"1","Token":"{{jwt}}"}
+
+---
+
+Request URL: https://weareadaptive.woffu.com/api/svc/signs/signs
+Request Method: POST
+
+{"UserId":422677,"TimezoneOffset":-120,"StartDate":"2021-05-02T23:35:50+02:00","EndDate":"2021-05-02T23:35:50+02:00","DeviceId":"WebApp"}
+
+{"signEventId":"6aa7d514-0d6f-4b43-805c-e1e4d5c82b5c"}
+
+---
+
+Request URL: https://weareadaptive.woffu.com/api/svc/signs/signs
+Request Method: POST
+
+{"UserId":422677,"TimezoneOffset":-120,"StartDate":"2021-05-02T23:36:17+02:00","EndDate":"2021-05-02T23:36:17+02:00","DeviceId":"WebApp"}
+
+{"signEventId":"e7e30056-0145-4bfa-a3c7-2a054991b717"}
+
+---
+
+Request URL: https://weareadaptive.woffu.com/api/signs
+Request Method: GET
+[{"$id":"1","SignId":66954790,"UserId":422677,"Date":"2021-05-02T21:35:51.407","TrueDate":"2021-05-02T23:35:51.407","SignIn":true,"IP":"83.59.240.143","Latitude":null,"Longitude":null,"Outside":false,"Time":"19:00:00","ValueTime":"19:00:00","ShortTime":"23:35:51","ShortTrueTime":"23:35:51","ShortValueTime":"19:00:00","UtcTime":"21:35:51 +2","Code":null,"SignType":5,"SignStatus":0,"SignEventId":"6aa7d514-0d6f-4b43-805c-e1e4d5c82b5c","DeviceId":"WebApp","Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null},{"$id":"2","SignId":66954791,"UserId":422677,"Date":"2021-05-02T21:36:17.867","TrueDate":"2021-05-02T23:36:17.867","SignIn":false,"IP":"83.59.240.143","Latitude":null,"Longitude":null,"Outside":false,"Time":"19:00:00","ValueTime":"19:00:00","ShortTime":"23:36:17","ShortTrueTime":"23:36:17","ShortValueTime":"19:00:00","UtcTime":"21:36:17 +2","Code":null,"SignType":5,"SignStatus":0,"SignEventId":"e7e30056-0145-4bfa-a3c7-2a054991b717","DeviceId":"WebApp","Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null}]
+
+
+---
+
+Request URL: https://weareadaptive.woffu.com/api/diaries/263107253/workday/self
+Request Method: PUT
+{"DiaryId":263107253,"UserId":422677,"Date":"2021-05-03T00:00:00.000","DepartmentId":99626,"JobTitleId":88810,"CalendarId":39960,"ScheduleId":92062,"AgreementId":null,"TrueStartTime":"09:00:00","TrueEndTime":"18:00:00","TrueBreaksHours":1,"Accepted":false,"Comments":null,"Signs":[{"SignId":0,"UserId":422677,"Date":"2021-05-03T09:00:00.000","TrueDate":"2021-05-03T09:00:00.000","SignIn":true,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"09:00","ValueTime":"09:00:00","ShortTime":"09:00:00","ShortTrueTime":"09:00:00","ShortValueTime":"09:00:00","UtcTime":"09:00:00 +0","Code":null,"SignType":3,"SignStatus":1,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null,"ModifiedTime":"09:00:00","order":1},{"SignId":0,"UserId":422677,"Date":"2021-05-03T13:00:00.000","TrueDate":"2021-05-03T13:00:00.000","SignIn":false,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"13:00","ValueTime":"13:00:00","ShortTime":"13:00:00","ShortTrueTime":"13:00:00","ShortValueTime":"13:00:00","UtcTime":"13:00:00 +0","Code":null,"SignType":3,"SignStatus":1,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null,"ModifiedTime":"13:00:00","order":2,"slotHour":4},{"SignId":0,"UserId":422677,"Date":"2021-05-03T14:00:00.000","TrueDate":"2021-05-03T14:00:00.000","SignIn":true,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"14:00","ValueTime":"14:00:00","ShortTime":"14:00:00","ShortTrueTime":"14:00:00","ShortValueTime":"14:00:00","UtcTime":"14:00:00 +0","Code":null,"SignType":3,"SignStatus":1,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null,"ModifiedTime":"14:00:00","order":3},{"SignId":0,"UserId":422677,"Date":"2021-05-03T18:00:00.000","TrueDate":"2021-05-03T18:00:00.000","SignIn":false,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"18:00","ValueTime":"18:00:00","ShortTime":"18:00:00","ShortTrueTime":"18:00:00","ShortValueTime":"18:00:00","UtcTime":"18:00:00 +0","Code":null,"SignType":3,"SignStatus":1,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null,"ModifiedTime":"18:00:00","order":4,"slotHour":4}]}
+
+Fichajes futuros no permitidos
+
+==
+
+{"DiaryId":263107253,"UserId":422677,"Date":"2021-05-03T00:00:00.000","DepartmentId":99626,"JobTitleId":88810,"CalendarId":39960,"ScheduleId":92062,"AgreementId":null,"TrueStartTime":"09:00:00","TrueEndTime":"18:00:00","TrueBreaksHours":1,"Accepted":false,"Comments":null,"Signs":[{"SignId":0,"UserId":422677,"Date":"2021-05-03T09:00:00.000","TrueDate":"2021-05-03T09:00:00.000","SignIn":true,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"09:00","ValueTime":"09:00:00","ShortTime":"09:00:00","ShortTrueTime":"09:00:00","ShortValueTime":"09:00:00","UtcTime":"09:00:00 +0","Code":null,"SignType":3,"SignStatus":1,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null,"ModifiedTime":"09:00:00","order":1},{"SignId":0,"UserId":422677,"Date":"2021-05-03T13:00:00.000","TrueDate":"2021-05-03T13:00:00.000","SignIn":false,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"10:30","ValueTime":"13:00:00","ShortTime":"13:00:00","ShortTrueTime":"13:00:00","ShortValueTime":"13:00:00","UtcTime":"13:00:00 +0","Code":null,"SignType":3,"SignStatus":1,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null,"ModifiedTime":"13:00:00","order":2,"slotHour":1.5},{"SignId":0,"UserId":422677,"Date":"2021-05-03T14:00:00.000","TrueDate":"2021-05-03T14:00:00.000","SignIn":true,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"14:00","ValueTime":"14:00:00","ShortTime":"14:00:00","ShortTrueTime":"14:00:00","ShortValueTime":"14:00:00","UtcTime":"14:00:00 +0","Code":null,"SignType":3,"SignStatus":2,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null,"ModifiedTime":"14:00:00","order":3},{"SignId":0,"UserId":422677,"Date":"2021-05-03T18:00:00.000","TrueDate":"2021-05-03T18:00:00.000","SignIn":false,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"18:00","ValueTime":"18:00:00","ShortTime":"18:00:00","ShortTrueTime":"18:00:00","ShortValueTime":"18:00:00","UtcTime":"18:00:00 +0","Code":null,"SignType":3,"SignStatus":2,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null,"ModifiedTime":"18:00:00","order":4,"slotHour":4}]}
+
+204
+
+
+When deleting
+
+GET https://weareadaptive.woffu.com/api/diaries/263107253/workday/self
+{"$id":"1","DiaryBaseWorkDay":{"$id":"2","DiaryId":263107253,"UserId":422677,"ScheduleId":92062,"ScheduleName":null,"Date":"2021-05-03T00:00:00.000","ST1":"09:00:00","ET1":"13:00:00","ST2":"14:00:00","ET2":"18:00:00","ST3":null,"ET3":null,"ST4":null,"ET4":null,"BaseStartTime1":"09:00:00","BaseEndTime1":"13:00:00","BaseStartTime2":"14:00:00","BaseEndTime2":"18:00:00","BaseStartTime3":null,"BaseEndTime3":null,"BaseStartTime4":null,"BaseEndTime4":null,"IsFlexible":false,"BaseScheduleHours":8.00000,"BaseScheduleFormatted":{"$id":"3","Resource":"_HoursFormatted","Values":["8"]},"BaseWorkingScheduleHours":8.0000000000000000000,"BaseWorkingScheduleFormatted":{"$id":"4","Resource":"_HoursFormatted","Values":["8"]},"ScheduleHours":8.00000,"ScheduleFormatted":{"$id":"5","Resource":"_HoursFormatted","Values":["8"]},"TrueScheduleHours":1.50000,"TrueScheduleFormatted":{"$id":"6","Resource":"_HoursMinutesFormatted","Values":["1","30"]},"BreaksHours":1.00000,"BreaksFormatted":{"$id":"7","Resource":"_HoursFormatted","Values":["1"]},"MinBreaksHours":0.75000,"MinBreaksFormatted":{"$id":"8","Resource":"_HoursMinutesFormatted","Values":["0","45"]},"HoursExtra":0.00000,"HoursRemunerated":0.00000,"HoursRemuneratedEffective":0.00000,"HoursRemuneratedEffectiveFormatted":{"$id":"9","Resource":"_HoursFormatted","Values":["0"]},"HoursWorkingOrdinary":1.50000,"HoursWorkingOrdinaryFormatted":{"$id":"10","Resource":"_HoursMinutesFormatted","Values":["1","30"]},"HoursNoCategorized":1.50000,"HoursNoCategorizedFormatted":{"$id":"11","Resource":"_HoursMinutesFormatted","Values":["1","30"]},"TotalHoursWorkedOutOfLimits":0.00000,"TotalHoursWorkedOutOfLimitsFormatted":{"$id":"12","Resource":"_HoursFormatted","Values":["0"]},"TotalHoursWorkedEffectiveNoLimits":1.50000,"TotalHoursWorkedEffectiveNoLimitsFormatted":{"$id":"13","Resource":"_HoursMinutesFormatted","Values":["1","30"]},"HoursSignedEffectiveNoLimitsValue":1.5,"HoursSignedEffectiveNoLimitsValueFormatted":{"$id":"14","Resource":"_HoursMinutesFormatted","Values":["1","30"]},"HoursSignedEffectiveLimitsValue":1.5,"HoursSignedEffectiveLimitsValueFormatted":{"$id":"15","Resource":"_HoursMinutesFormatted","Values":["1","30"]},"ValuePresenceHoursRemunerated":0.00000,"PresenceHoursRemunerated":0.0,"DeltaBreaksHours":0.00000,"IsWeekend":false,"IsHoliday":false,"UseSign":true,"HoursDiff":-6.50000,"DiffFormatted":{"$id":"16","Resource":"_HoursMinutesFormatted","Values":["-6","30"]},"ValueAbsenceHours":0.00000,"JobTitleIdTime1":88810,"JobTitleIdTime2":88810,"JobTitleIdTime3":88810,"JobTitleIdTime4":88810,"OfficeIdTime1":43236,"OfficeIdTime2":43236,"OfficeIdTime3":43236,"OfficeIdTime4":43236,"TotalWeeks":0,"Comments":null,"HoursToWork":8.00000,"ToWorkFormatted":{"$id":"17","Resource":"_HoursFormatted","Values":["8"]},"TotalFinalHours":0.0,"TotalFinalHoursFormatted":{"$id":"18","Resource":"_HoursFormatted","Values":["0"]},"HoursInExcessNoLimits":-6.50000,"HoursInExcessNoLimitsFormatted":{"$id":"19","Resource":"_HoursMinutesFormatted","Values":["-6","30"]},"IsWorkingDay":true,"IgnoreSignsBefore":null,"IgnoreSignsAfter":null,"IgnoreHoursWorkedAfter":120,"ShowTrueHours":false},"Signs":[{"$id":"20","SignId":67004332,"UserId":422677,"Date":"2021-05-03T09:00:00.000","TrueDate":"2021-05-03T09:00:00.000","SignIn":true,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"09:00:00","ValueTime":"09:00:00","ShortTime":"09:00:00","ShortTrueTime":"09:00:00","ShortValueTime":"09:00:00","UtcTime":"09:00:00 +0","Code":null,"SignType":3,"SignStatus":0,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":"2021-05-03T08:49:59.410","RequestId":null,"AgreementEventId":null},{"$id":"21","SignId":67004333,"UserId":422677,"Date":"2021-05-03T10:30:00.000","TrueDate":"2021-05-03T10:30:00.000","SignIn":false,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"10:30:00","ValueTime":"10:30:00","ShortTime":"10:30:00","ShortTrueTime":"10:30:00","ShortValueTime":"10:30:00","UtcTime":"10:30:00 +0","Code":null,"SignType":3,"SignStatus":0,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":"2021-05-03T08:49:59.410","RequestId":null,"AgreementEventId":null},{"$id":"22","SignId":0,"UserId":422677,"Date":"2021-05-03T14:00:00.000","TrueDate":"2021-05-03T14:00:00.000","SignIn":true,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"14:00:00","ValueTime":"14:00:00","ShortTime":"14:00:00","ShortTrueTime":"14:00:00","ShortValueTime":"14:00:00","UtcTime":"14:00:00 +0","Code":null,"SignType":1,"SignStatus":0,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null},{"$id":"23","SignId":0,"UserId":422677,"Date":"2021-05-03T18:00:00.000","TrueDate":"2021-05-03T18:00:00.000","SignIn":false,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"18:00:00","ValueTime":"18:00:00","ShortTime":"18:00:00","ShortTrueTime":"18:00:00","ShortValueTime":"18:00:00","UtcTime":"18:00:00 +0","Code":null,"SignType":1,"SignStatus":0,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":null,"RequestId":null,"AgreementEventId":null}],"HourTypes":[]}
+
+PUT
+{"DiaryId":263107253,"UserId":422677,"Date":"2021-05-03T00:00:00.000","DepartmentId":99626,"JobTitleId":88810,"CalendarId":39960,"ScheduleId":92062,"AgreementId":null,"TrueStartTime":"09:00:00","TrueEndTime":"10:30:00","TrueBreaksHours":0,"Accepted":false,"Comments":null,"Signs":[{"SignId":67004332,"UserId":422677,"Date":"2021-05-03T09:00:00.000","TrueDate":"2021-05-03T09:00:00.000","SignIn":true,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"09:00:00","ValueTime":"09:00:00","ShortTime":"09:00:00","ShortTrueTime":"09:00:00","ShortValueTime":"09:00:00","UtcTime":"09:00:00 +0","Code":null,"SignType":3,"SignStatus":2,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":"2021-05-03T08:49:59.410","RequestId":null,"AgreementEventId":null,"order":1},{"SignId":67004333,"UserId":422677,"Date":"2021-05-03T10:30:00.000","TrueDate":"2021-05-03T10:30:00.000","SignIn":false,"IP":null,"Latitude":null,"Longitude":null,"Outside":null,"Time":"10:30:00","ValueTime":"10:30:00","ShortTime":"10:30:00","ShortTrueTime":"10:30:00","ShortValueTime":"10:30:00","UtcTime":"10:30:00 +0","Code":null,"SignType":3,"SignStatus":2,"SignEventId":null,"DeviceId":null,"Deleted":false,"UpdatedOn":"2021-05-03T08:49:59.410","RequestId":null,"AgreementEventId":null,"order":2,"slotHour":1.5}]}
+
+
+SignStatus = 1 => Create
+SignStatus = 2 => Delete
+
+
+
+==== MOBILE APP ====
+
+Access today's signs
+GET https://app.woffu.com/api/users/422677/workday/signs?date=2021-05-03 HTTP/1.1
+
+ {
+  "$id":"1","Date":"2021-05-03T00:00:00.000","PlannedSchedules":[ {
+    "$id":"2","OfficeName":"Barcelona","JobTitle":"Web Developer","TimeSpans":[ {
+      "$id":"3","StartTime":"09:00:00","EndTime":"13:00:00"
+    }
+    , {
+      "$id":"4","StartTime":"14:00:00","EndTime":"18:00:00"
+    }
+    ]
+  }
+  ],"MinimumBreakHoursText":"00:45h","Signs":[],"HoursDifferenceText":"-08:00h","Comments":null
+}
+
+Manually edit today's signs
+
+PUT https://app.woffu.com/api/diaries/selfSigns
+{"UserId":422677,"Signs":[{"UserId":422677,"SignIn":true,"Time":"09:00:00","TrueDate":"2021-05-03T09:00:00","ShortTrueTime":"09:00:00","SignStatus":1},{"UserId":422677,"SignIn":false,"Time":"13:00:00","TrueDate":"2021-05-03T13:00:00","ShortTrueTime":"13:00:00","SignStatus":1},{"UserId":422677,"SignIn":true,"Time":"14:00:00","isUpdated":false,"TrueDate":"2021-05-03T14:00:00","ShortTrueTime":"14:00:00","SignStatus":1},{"UserId":422677,"SignIn":false,"Time":"18:00:00","isUpdated":false,"TrueDate":"2021-05-03T18:00:00","ShortTrueTime":"18:00:00","SignStatus":1}],"Comments":"","Date":"2021-05-03T00:00:00.000"}
+
+Entrada
+POST https://app.woffu.com/api/svc/signs/signs
+{"UserId":422677,"TimezoneOffset":-120,"DeviceId":"Mobile App","Latitude":null,"Longitude":null,"ShortTrueTime":"12:12:42","SignIn":true,"isInstant":true}
+
+201
+
+Salida
+POST https://app.woffu.com/api/svc/signs/signs
+{"UserId":422677,"TimezoneOffset":-120,"DeviceId":"Mobile App","Latitude":null,"Longitude":null,"ShortTrueTime":"12:13:11","SignIn":false,"isInstant":true}
+
+201

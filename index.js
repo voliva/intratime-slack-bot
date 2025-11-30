@@ -12,8 +12,10 @@ const { setupReminders, processIM } = require("./features/reminders");
 const intratime = require("./intratime");
 
 const oauthToken = process.env.SLACK_TOKEN;
-if(!oauthToken) {
-  console.error("This server needs a slack token set in SLACK_TOKEN env variable");
+if (!oauthToken) {
+  console.error(
+    "This server needs a slack token set in SLACK_TOKEN env variable"
+  );
   process.exit(1);
 }
 
@@ -22,10 +24,12 @@ const adapter = new FileSync("db.json");
 const db = low(adapter);
 db.defaults({
   users: [],
-  tokens: []
+  tokens: [],
+  scheduledFills: [],
 }).write();
 
 setupReminders(db, slackWeb);
+intratime.setupDailyFills(db);
 
 router
   .get("/", async (ctx, next) => {
@@ -76,39 +80,36 @@ async function processEvent(event) {
     return;
   }
 
-  const user = db
-    .get("users")
-    .find({ id: userId })
-    .value();
+  const user = db.get("users").find({ id: userId }).value();
 
   if (!user) {
     const url = prepareRegisterUrl(userId, db);
 
     return slackWeb.chat.postMessage({
       text: `It seems like you haven't registered yet. Click here to register: ${url}`,
-      channel
+      channel,
     });
   }
 
-  const msg = await processMessage(insensitiveText, user, {
+  const msg = insensitiveText && (await processMessage(insensitiveText, user, {
     db,
     intratime,
-    postMessage: msg =>
+    postMessage: (msg) =>
       slackWeb.chat.postMessage({
         ...msg,
-        channel
-      })
-  });
+        channel,
+      }),
+  }));
 
   if (msg) {
     return slackWeb.chat.postMessage({
       ...msg,
-      channel
+      channel,
     });
   } else {
     return slackWeb.chat.postMessage({
       text: "Sorry, I didn't get that",
-      channel
+      channel,
     });
   }
 }
